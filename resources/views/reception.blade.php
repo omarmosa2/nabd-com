@@ -298,9 +298,9 @@
                 const result = await res.json();
                 
                 document.getElementById('totalsBox').style.display = 'block';
-                document.getElementById('totalFees').textContent = result.totals.total_fees + ' ر.س';
-                document.getElementById('doctorShare').textContent = result.totals.doctor_share + ' ر.س';
-                document.getElementById('centerShare').textContent = result.totals.center_share + ' ر.س';
+                document.getElementById('totalFees').textContent = result.totals.total_fees + ' ل.س';
+                document.getElementById('doctorShare').textContent = result.totals.doctor_share + ' ل.س';
+                document.getElementById('centerShare').textContent = result.totals.center_share + ' ل.س';
 
                 if (result.is_free_review) {
                     showAlert('هذه مراجعة مجانية', 'info');

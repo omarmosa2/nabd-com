@@ -38,7 +38,7 @@ class SettingsService
             'complex_name' => 'مجمع نبض الطبي',
             'default_examination_fee' => 150,
             'currency' => 'SAR',
-            'currency_symbol' => 'ر.س',
+            'currency_symbol' => 'ل.س',
             'invoice_header' => 'مجمع نبض الطبي',
             'invoice_footer' => 'شكراً لزيارتكم',
         ];

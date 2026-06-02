@@ -1390,6 +1390,104 @@
         }
         .assign-doctor-form select { flex: 1; min-height: 36px; }
 
+        .clinic-working-hours {
+            display: grid;
+            gap: 10px;
+        }
+
+        .clinic-working-hour-row {
+            display: grid;
+            grid-template-columns: minmax(90px, 1fr) auto minmax(220px, 1.3fr);
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+
+        .clinic-working-hour-row.is-active {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .clinic-working-day-name {
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .clinic-working-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .clinic-working-toggle input {
+            appearance: none;
+            width: 42px;
+            height: 24px;
+            border-radius: 999px;
+            background: #d1d5db;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clinic-working-toggle input::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        }
+
+        .clinic-working-toggle input:checked {
+            background: var(--success);
+        }
+
+        .clinic-working-toggle input:checked::before {
+            transform: translateX(-18px);
+        }
+
+        .clinic-working-time-fields {
+            display: none;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .clinic-working-hour-row.is-active .clinic-working-time-fields {
+            display: flex;
+        }
+
+        .clinic-working-time-fields input {
+            min-height: 36px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-family: inherit;
+        }
+
+        @media (max-width: 720px) {
+            .clinic-working-hour-row {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+
+            .clinic-working-time-fields {
+                flex-wrap: wrap;
+            }
+        }
+
         .pagination {
             padding: 18px;
             border-top: 1px solid var(--line);
@@ -1956,7 +2054,7 @@
                                     <div class="apt-row apt-row-2">
                                         <div class="form-group">
                                             <label for="appointmentClinicId">العيادة <span class="req">*</span></label>
-                                            <select id="appointmentClinicId" onchange="spa.loadDoctorsForAppointmentModal()" required>
+                                            <select id="appointmentClinicId" onchange="spa.onAppointmentClinicChange()" required>
                                                 <option value="">— اختر العيادة —</option>
                                             </select>
                                         </div>
@@ -2153,6 +2251,15 @@
 
                                 <section class="apt-section">
                                     <div class="apt-section-header">
+                                        <span class="apt-section-icon">⏱</span>
+                                        <span class="apt-section-title">أيام وساعات الدوام</span>
+                                    </div>
+                                    <div class="clinic-working-hours" id="clinicWorkingHours"></div>
+                                    <small class="apt-hint">فعّل الأيام التي تستقبل فيها العيادة المواعيد وحدد وقت البداية والنهاية.</small>
+                                </section>
+
+                                <section class="apt-section">
+                                    <div class="apt-section-header">
                                         <span class="apt-section-icon">📝</span>
                                         <span class="apt-section-title">تفاصيل إضافية</span>
                                     </div>
@@ -2333,7 +2440,7 @@
                                     </div>
                                     <div class="apt-row apt-row-2">
                                         <div class="form-group">
-                                            <label for="doctorExaminationFee">سعر الكشف (ر.س) <span class="req">*</span></label>
+                                            <label for="doctorExaminationFee">سعر الكشف (ل.س) <span class="req">*</span></label>
                                             <input type="number" id="doctorExaminationFee" required min="0" step="0.01" placeholder="0.00">
                                         </div>
                                         <div class="form-group">
@@ -2412,7 +2519,7 @@
                                     </div>
                                     <div class="apt-row apt-row-2">
                                         <div class="form-group">
-                                            <label for="deductionAmount">المبلغ (ر.س) <span class="req">*</span></label>
+                                            <label for="deductionAmount">المبلغ (ل.س) <span class="req">*</span></label>
                                             <input type="number" id="deductionAmount" required min="0.01" step="0.01" placeholder="0.00">
                                         </div>
                                         <div class="form-group">

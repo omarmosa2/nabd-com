@@ -22,6 +22,7 @@ class ClinicResource extends JsonResource
             'status_color' => $this->status?->color(),
             'accepts_appointments' => $this->acceptsAppointments(),
             'accepts_visits' => $this->acceptsVisits(),
+            'working_hours' => $this->workingHoursSchedule(),
             'is_archived' => $this->isArchived(),
             'has_active_doctors' => $this->hasActiveDoctors(),
             'has_visits' => $this->hasVisits(),

@@ -6,7 +6,6 @@ use App\Enums\ClinicStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Clinic extends Model
@@ -48,6 +47,11 @@ class Clinic extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function workingHours(): HasMany
+    {
+        return $this->hasMany(ClinicWorkingHour::class);
+    }
+
     public function patients()
     {
         return $this->hasManyThrough(
@@ -73,6 +77,70 @@ class Clinic extends Model
     public function acceptsAppointments(): bool
     {
         return $this->status?->acceptsAppointments() ?? false;
+    }
+
+    public function isOpenFor(Carbon $start, int $durationMinutes): bool
+    {
+        $workingHour = $this->workingHourFor($start);
+        if (!$workingHour || !$workingHour->is_active || !$workingHour->start_time || !$workingHour->end_time) {
+            return false;
+        }
+
+        $openAt = $start->copy()->setTimeFromTimeString((string) $workingHour->start_time);
+        $closeAt = $start->copy()->setTimeFromTimeString((string) $workingHour->end_time);
+        $end = $start->copy()->addMinutes($durationMinutes);
+
+        return $start->greaterThanOrEqualTo($openAt) && $end->lessThanOrEqualTo($closeAt);
+    }
+
+    public function workingHourFor(Carbon $date): ?ClinicWorkingHour
+    {
+        $day = self::dayOfWeekKey($date);
+
+        if ($this->relationLoaded('workingHours')) {
+            return $this->workingHours->firstWhere('day_of_week', $day);
+        }
+
+        return $this->workingHours()->where('day_of_week', $day)->first();
+    }
+
+    public function workingHoursSchedule(): array
+    {
+        $hours = $this->relationLoaded('workingHours')
+            ? $this->workingHours
+            : $this->workingHours()->get();
+        $byDay = $hours->keyBy('day_of_week');
+
+        return collect(ClinicWorkingHour::DAYS)
+            ->map(function (string $day) use ($byDay) {
+                $hour = $byDay->get($day);
+                if (!$hour) {
+                    return [
+                        'day_of_week' => $day,
+                        'day_label' => ClinicWorkingHour::DAY_LABELS[$day],
+                        'is_active' => false,
+                        'start_time' => null,
+                        'end_time' => null,
+                    ];
+                }
+
+                return $hour->toScheduleArray();
+            })
+            ->values()
+            ->all();
+    }
+
+    public static function dayOfWeekKey(Carbon $date): string
+    {
+        return match ($date->dayOfWeek) {
+            Carbon::SATURDAY => 'saturday',
+            Carbon::SUNDAY => 'sunday',
+            Carbon::MONDAY => 'monday',
+            Carbon::TUESDAY => 'tuesday',
+            Carbon::WEDNESDAY => 'wednesday',
+            Carbon::THURSDAY => 'thursday',
+            Carbon::FRIDAY => 'friday',
+        };
     }
 
     public function acceptsVisits(): bool

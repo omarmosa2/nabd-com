@@ -44,6 +44,7 @@ class ClinicController extends Controller
     public function show(Clinic $clinic): ClinicResource
     {
         $this->authorizeView($clinic);
+        $clinic->load('workingHours');
         $clinic->loadCount(['users', 'visits', 'appointments']);
         return new ClinicResource($clinic);
     }

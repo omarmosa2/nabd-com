@@ -180,7 +180,7 @@
                         <p>إجمالي الزيارات</p>
                     </div>
                     <div class="stat-card">
-                        <h3>${data.total_revenue} ر.س</h3>
+                        <h3>${data.total_revenue} ل.س</h3>
                         <p>إجمالي الإيراد</p>
                     </div>
                     <div class="stat-card">
@@ -201,7 +201,7 @@
                     <tr>
                         <td>${d.doctor_name}</td>
                         <td><span class="badge badge-info">${d.visits_count}</span></td>
-                        <td>${d.revenue} ر.س</td>
+                        <td>${d.revenue} ل.س</td>
                     </tr>
                 `).join('');
                 html += '</tbody></table>';
@@ -235,7 +235,7 @@
                         <p>إجمالي الزيارات</p>
                     </div>
                     <div class="stat-card">
-                        <h3>${data.total_revenue} ر.س</h3>
+                        <h3>${data.total_revenue} ل.س</h3>
                         <p>إجمالي الإيراد</p>
                     </div>
                     <div class="stat-card">
@@ -276,7 +276,7 @@
                     <tr>
                         <td>${d.doctor_name}</td>
                         <td><span class="badge badge-info">${d.visits_count}</span></td>
-                        <td>${d.revenue} ر.س</td>
+                        <td>${d.revenue} ل.س</td>
                     </tr>
                 `).join('');
                 html += '</tbody></table>';
@@ -372,19 +372,19 @@
             let html = `
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <h3>${summary.total_examination_fees} ر.س</h3>
+                        <h3>${summary.total_examination_fees} ل.س</h3>
                         <p>رسوم الكشف</p>
                     </div>
                     <div class="stat-card">
-                        <h3>${summary.total_amount_received} ر.س</h3>
+                        <h3>${summary.total_amount_received} ل.س</h3>
                         <p>المستلم</p>
                     </div>
                     <div class="stat-card">
-                        <h3>${summary.total_center_share} ر.س</h3>
+                        <h3>${summary.total_center_share} ل.س</h3>
                         <p>حصة المجمع</p>
                     </div>
                     <div class="stat-card">
-                        <h3>${summary.net_doctor_payable} ر.س</h3>
+                        <h3>${summary.net_doctor_payable} ل.س</h3>
                         <p>صافي الأطباء</p>
                     </div>
                 </div>

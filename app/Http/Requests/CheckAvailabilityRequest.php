@@ -16,6 +16,7 @@ class CheckAvailabilityRequest extends FormRequest
     {
         return [
             'doctor_id' => ['required', 'exists:users,id'],
+            'clinic_id' => ['nullable', 'exists:clinics,id'],
             'appointment_date' => ['required', 'date'],
             'duration_minutes' => ['nullable', 'integer', 'min:5', 'max:480'],
             'ignore_id' => ['nullable', 'integer', 'exists:appointments,id'],

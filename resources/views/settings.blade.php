@@ -87,7 +87,7 @@
                 document.getElementById('complexName').value = data.complex_name || '';
                 document.getElementById('defaultExaminationFee').value = data.default_examination_fee || 0;
                 document.getElementById('currency').value = data.currency || 'SAR';
-                document.getElementById('currencySymbol').value = data.currency_symbol || 'ر.س';
+                document.getElementById('currencySymbol').value = data.currency_symbol || 'ل.س';
                 document.getElementById('invoiceHeader').value = data.invoice_header || '';
                 document.getElementById('invoiceFooter').value = data.invoice_footer || '';
             } catch (error) {

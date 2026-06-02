@@ -146,17 +146,17 @@
                 </div>
                 <div class="stat-card" onclick="window.location.href='/finance'">
                     <div class="icon">💰</div>
-                    <h3>${stats.revenue_today} ر.س</h3>
+                    <h3>${stats.revenue_today} ل.س</h3>
                     <p>إيراد اليوم</p>
                 </div>
                 <div class="stat-card" onclick="window.location.href='/finance'">
                     <div class="icon">📊</div>
-                    <h3>${revenue.monthly_total} ر.س</h3>
+                    <h3>${revenue.monthly_total} ل.س</h3>
                     <p>إيراد الشهر</p>
                 </div>
                 <div class="stat-card" onclick="window.location.href='/finance'">
                     <div class="icon">🏢</div>
-                    <h3>${revenue.complex_share} ر.س</h3>
+                    <h3>${revenue.complex_share} ل.س</h3>
                     <p>حصة المجمع</p>
                 </div>
             `;

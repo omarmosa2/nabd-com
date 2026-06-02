@@ -16,6 +16,16 @@ class NabdhSPA {
         this.doctorsPollTimer = null;
         this.currentDoctorId = null;
         this.currentDoctorTab = 'overview';
+        this.clinicWeekDays = [
+            { value: 'saturday', label: 'السبت' },
+            { value: 'sunday', label: 'الأحد' },
+            { value: 'monday', label: 'الإثنين' },
+            { value: 'tuesday', label: 'الثلاثاء' },
+            { value: 'wednesday', label: 'الأربعاء' },
+            { value: 'thursday', label: 'الخميس' },
+            { value: 'friday', label: 'الجمعة' },
+        ];
+        this.appointmentWorkingHoursByClinicId = {};
         this.init();
     }
 
@@ -318,7 +328,7 @@ class NabdhSPA {
                     <p>مراجعات اليوم</p>
                 </div>
                 <div class="stat-card" onclick="spa.navigate('/finance')">
-                    <h3>${stats.revenue_today || 0} ر.س</h3>
+                    <h3>${stats.revenue_today || 0} ل.س</h3>
                     <p>إيراد اليوم</p>
                 </div>
             `;
@@ -339,7 +349,7 @@ class NabdhSPA {
                                     👨‍⚕️ ${c.doctors_count} طبيب ·
                                     👥 ${c.patients_count} مريض ·
                                     📅 ${c.appointments_count} موعد ·
-                                    💰 ${revenue} ر.س
+                                    💰 ${revenue} ل.س
                                 </div>
                             </div>
                         </div>
@@ -365,7 +375,7 @@ class NabdhSPA {
                         <p>طبيب نشط</p>
                     </div>
                     <div class="stat-card" onclick="spa.navigate('/doctors')">
-                        <h3>${revenue} ر.س</h3>
+                        <h3>${revenue} ل.س</h3>
                         <p>إيرادات الأطباء (الشهر)</p>
                     </div>
                 `;
@@ -387,7 +397,7 @@ class NabdhSPA {
                                 <div class="top-doctor-meta">
                                     ${d.specialization ? this.escapeHtml(d.specialization) + ' · ' : ''}
                                     ${d.clinic_name ? this.escapeHtml(d.clinic_name) + ' · ' : ''}
-                                    👥 ${d.patients_count || 0} · 🏥 ${d.visits_count || 0} · 💰 ${revenue} ر.س
+                                    👥 ${d.patients_count || 0} · 🏥 ${d.visits_count || 0} · 💰 ${revenue} ل.س
                                 </div>
                             </div>
                         </div>
@@ -772,7 +782,7 @@ class NabdhSPA {
                 </div>
                 <div class="info-item">
                     <div class="label">إجمالي المصروف</div>
-                    <div class="value">${data.total_spent} ر.س</div>
+                    <div class="value">${data.total_spent} ل.س</div>
                 </div>
             </div>
             <h3 style="margin-bottom: 15px; color: #333;">سجل الزيارات</h3>
@@ -786,14 +796,14 @@ class NabdhSPA {
                     <h4>${v.visit_type === 'examination' ? 'معاينة' : 'مراجعة'} - ${new Date(v.visit_date).toLocaleDateString('ar-SA')}</h4>
                     <p><strong>الطبيب:</strong> ${v.doctor.full_name}</p>
                     <p><strong>العيادة:</strong> ${v.clinic.name}</p>
-                    <p><strong>إجمالي الرسوم:</strong> ${v.totals.total_fees} ر.س</p>
-                    <p><strong>حصة الطبيب:</strong> ${v.totals.doctor_share} ر.س</p>
-                    <p><strong>حصة المجمع:</strong> ${v.totals.center_share} ر.س</p>
+                    <p><strong>إجمالي الرسوم:</strong> ${v.totals.total_fees} ل.س</p>
+                    <p><strong>حصة الطبيب:</strong> ${v.totals.doctor_share} ل.س</p>
+                    <p><strong>حصة المجمع:</strong> ${v.totals.center_share} ل.س</p>
                     ${v.is_free_review ? '<p><span class="badge badge-warning">مراجعة مجانية</span></p>' : ''}
                     ${v.procedures.length > 0 ? `
                         <p style="margin-top: 10px;"><strong>العمليات:</strong></p>
                         <ul style="margin-right: 20px; margin-top: 5px;">
-                            ${v.procedures.map(p => `<li>${p.name} - مجمع: ${p.center_fee} ر.س، طبيب: ${p.doctor_fee} ر.س</li>`).join('')}
+                            ${v.procedures.map(p => `<li>${p.name} - مجمع: ${p.center_fee} ل.س، طبيب: ${p.doctor_fee} ل.س</li>`).join('')}
                         </ul>
                     ` : ''}
                     ${v.notes ? `<p style="margin-top: 10px;"><strong>ملاحظات:</strong> ${v.notes}</p>` : ''}
@@ -858,7 +868,7 @@ class NabdhSPA {
                 </div>
                 <div class="info-item">
                     <div class="label">إجمالي المصروف</div>
-                    <div class="value">${data.total_spent} ر.س</div>
+                    <div class="value">${data.total_spent} ل.س</div>
                 </div>
             </div>
         `;
@@ -889,14 +899,14 @@ class NabdhSPA {
                     <h4>${v.visit_type === 'examination' ? 'معاينة' : 'مراجعة'} - ${new Date(v.visit_date).toLocaleDateString('ar-SA')}</h4>
                     <p><strong>الطبيب:</strong> ${v.doctor.full_name}</p>
                     <p><strong>العيادة:</strong> ${v.clinic.name}</p>
-                    <p><strong>إجمالي الرسوم:</strong> ${v.totals.total_fees} ر.س</p>
-                    <p><strong>حصة الطبيب:</strong> ${v.totals.doctor_share} ر.س</p>
-                    <p><strong>حصة المجمع:</strong> ${v.totals.center_share} ر.س</p>
+                    <p><strong>إجمالي الرسوم:</strong> ${v.totals.total_fees} ل.س</p>
+                    <p><strong>حصة الطبيب:</strong> ${v.totals.doctor_share} ل.س</p>
+                    <p><strong>حصة المجمع:</strong> ${v.totals.center_share} ل.س</p>
                     ${v.is_free_review ? '<p><span class="badge badge-warning">مراجعة مجانية</span></p>' : ''}
                     ${v.procedures.length > 0 ? `
                         <p style="margin-top: 10px;"><strong>العمليات:</strong></p>
                         <ul style="margin-right: 20px; margin-top: 5px;">
-                            ${v.procedures.map(p => `<li>${p.name} - مجمع: ${p.center_fee} ر.س، طبيب: ${p.doctor_fee} ر.س</li>`).join('')}
+                            ${v.procedures.map(p => `<li>${p.name} - مجمع: ${p.center_fee} ل.س، طبيب: ${p.doctor_fee} ل.س</li>`).join('')}
                         </ul>
                     ` : ''}
                     ${v.notes ? `<p style="margin-top: 10px;"><strong>ملاحظات:</strong> ${v.notes}</p>` : ''}
@@ -926,19 +936,19 @@ class NabdhSPA {
 
             document.getElementById('financeStats').innerHTML = `
                 <div class="stat-card">
-                    <h3>${summary.total_examination_fees || 0} ر.س</h3>
+                    <h3>${summary.total_examination_fees || 0} ل.س</h3>
                     <p>رسوم الكشف</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.total_amount_received || 0} ر.س</h3>
+                    <h3>${summary.total_amount_received || 0} ل.س</h3>
                     <p>المستلم</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.total_center_share || 0} ر.س</h3>
+                    <h3>${summary.total_center_share || 0} ل.س</h3>
                     <p>حصة المجمع</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.net_doctor_payable || 0} ر.س</h3>
+                    <h3>${summary.net_doctor_payable || 0} ل.س</h3>
                     <p>صافي الأطباء</p>
                 </div>
             `;
@@ -948,9 +958,9 @@ class NabdhSPA {
                 <tr>
                     <td>${d.doctor_name}</td>
                     <td><span class="badge badge-info">${d.total_visits}</span></td>
-                    <td>${d.doctor_share} ر.س</td>
-                    <td>${d.deductions} ر.س</td>
-                    <td><strong>${d.net_payable} ر.س</strong></td>
+                    <td>${d.doctor_share} ل.س</td>
+                    <td>${d.deductions} ل.س</td>
+                    <td><strong>${d.net_payable} ل.س</strong></td>
                 </tr>
             `).join('');
         } catch (error) {
@@ -1300,6 +1310,7 @@ class NabdhSPA {
                 const a = data.data || data;
                 document.getElementById('appointmentId').value = a.id;
                 document.getElementById('appointmentPatientId').value = a.patient.id;
+                await this.loadClinicsForAppointmentModal(a.clinic.id);
                 document.getElementById('appointmentClinicId').value = a.clinic.id;
                 await this.loadDoctorsForAppointmentModal(a.doctor.id);
                 document.getElementById('appointmentDoctorId').value = a.doctor.id;
@@ -1354,22 +1365,102 @@ class NabdhSPA {
         }
     }
 
-    async loadClinicsForAppointmentModal() {
+    async loadClinicsForAppointmentModal(preselectId = null) {
         try {
             const res = await this.apiCall('/api/clinics/active');
             const data = await res.json();
             const sel = document.getElementById('appointmentClinicId');
             if (!sel) return;
             const clinics = data.data || [];
+            this.appointmentWorkingHoursByClinicId = {};
+            clinics.forEach(c => {
+                this.appointmentWorkingHoursByClinicId[c.id] = c.working_hours || [];
+            });
             if (clinics.length === 0) {
                 sel.innerHTML = '<option value="">— لا توجد عيادات نشطة —</option>';
             } else {
                 sel.innerHTML = '<option value="">— اختر العيادة —</option>' +
                     clinics.map(c => `<option value="${c.id}">${this.escapeHtml(c.name)}</option>`).join('');
             }
+            if (preselectId) sel.value = preselectId;
         } catch (error) {
             console.error('Error loading clinics:', error);
         }
+    }
+
+    async onAppointmentClinicChange() {
+        await this.loadDoctorsForAppointmentModal();
+        this.applyAppointmentWorkingHoursConstraints();
+        this.checkAppointmentAvailability();
+    }
+
+    getSelectedAppointmentWorkingHours() {
+        const clinicId = document.getElementById('appointmentClinicId')?.value;
+        return clinicId ? (this.appointmentWorkingHoursByClinicId[clinicId] || []) : [];
+    }
+
+    jsDayToClinicDay(date) {
+        const map = {
+            0: 'sunday',
+            1: 'monday',
+            2: 'tuesday',
+            3: 'wednesday',
+            4: 'thursday',
+            5: 'friday',
+            6: 'saturday',
+        };
+        return map[date.getDay()];
+    }
+
+    addMinutesToTime(time, minutes) {
+        const [hh, mm] = time.split(':').map(Number);
+        const total = hh * 60 + mm + minutes;
+        const nextH = Math.floor(total / 60);
+        const nextM = total % 60;
+        return `${String(nextH).padStart(2, '0')}:${String(nextM).padStart(2, '0')}`;
+    }
+
+    applyAppointmentWorkingHoursConstraints() {
+        const input = document.getElementById('appointmentDate');
+        const duration = parseInt(document.getElementById('appointmentDuration')?.value || '30');
+        if (!input) return false;
+
+        input.setCustomValidity('');
+        input.removeAttribute('min');
+        input.removeAttribute('max');
+
+        const dateVal = input.value;
+        const workingHours = this.getSelectedAppointmentWorkingHours();
+        if (!dateVal || !workingHours.length) return false;
+
+        const date = new Date(dateVal);
+        if (Number.isNaN(date.getTime())) return false;
+
+        const dayKey = this.jsDayToClinicDay(date);
+        const dayHours = workingHours.find(h => h.day_of_week === dayKey);
+        const dayLabel = dayHours?.day_label || this.clinicWeekDays.find(d => d.value === dayKey)?.label || dayKey;
+
+        if (!dayHours || !dayHours.is_active) {
+            const message = `لا يوجد دوام للعيادة يوم ${dayLabel}`;
+            input.setCustomValidity(message);
+            this.showAvailabilityHint(message, 'conflict');
+            return true;
+        }
+
+        const datePart = dateVal.slice(0, 10);
+        input.min = `${datePart}T${dayHours.start_time}`;
+        input.max = `${datePart}T${dayHours.end_time}`;
+
+        const time = dateVal.slice(11, 16);
+        const endTime = this.addMinutesToTime(time, duration);
+        if (time < dayHours.start_time || endTime > dayHours.end_time) {
+            const message = `وقت الموعد خارج دوام العيادة (${dayLabel}: ${dayHours.start_time} - ${dayHours.end_time})`;
+            input.setCustomValidity(message);
+            this.showAvailabilityHint(message, 'conflict');
+            return true;
+        }
+
+        return false;
     }
 
     async loadDoctorsForAppointmentModal(preselectId = null) {
@@ -1393,10 +1484,15 @@ class NabdhSPA {
 
     checkAppointmentAvailability() {
         clearTimeout(this.availabilityCheckTimer);
+        const clinicId = document.getElementById('appointmentClinicId')?.value;
         const doctorId = document.getElementById('appointmentDoctorId')?.value;
         const dateVal = document.getElementById('appointmentDate')?.value;
         const duration = parseInt(document.getElementById('appointmentDuration')?.value || '30');
         const ignoreId = document.getElementById('appointmentId')?.value;
+
+        if (this.applyAppointmentWorkingHoursConstraints()) {
+            return;
+        }
 
         if (!doctorId || !dateVal) {
             this.hideAvailabilityHint();
@@ -1406,17 +1502,19 @@ class NabdhSPA {
         this.showAvailabilityHint('جاري التحقق من التوفر...', 'checking');
         this.availabilityCheckTimer = setTimeout(async () => {
             let url = `/api/appointments/check-availability?doctor_id=${doctorId}&appointment_date=${encodeURIComponent(dateVal)}&duration_minutes=${duration}`;
+            if (clinicId) url += `&clinic_id=${clinicId}`;
             if (ignoreId) url += `&ignore_id=${ignoreId}`;
             try {
                 const res = await this.apiCall(url);
                 const data = await res.json();
                 if (data.available) {
-                    this.showAvailabilityHint('✓ الموعد متاح', 'ok');
+                    this.showAvailabilityHint(data.message || '✓ الموعد متاح', 'ok');
                 } else {
                     const list = (data.conflicts || []).map(c =>
                         `${c.appointment_date} - ${this.escapeHtml(c.patient_name || '')}`
                     ).join(' • ');
-                    this.showAvailabilityHint(`⚠ تعارض: الطبيب لديه موعد آخر في نفس الفترة (${list})`, 'conflict');
+                    const msg = data.message || `تعارض: الطبيب لديه موعد آخر في نفس الفترة (${list})`;
+                    this.showAvailabilityHint(msg, 'conflict');
                 }
             } catch (error) {
                 this.hideAvailabilityHint();
@@ -1437,12 +1535,23 @@ class NabdhSPA {
     hideAvailabilityHint() {
         const el = document.getElementById('appointmentAvailabilityHint');
         if (el) el.style.display = 'none';
+        const input = document.getElementById('appointmentDate');
+        if (input) {
+            input.setCustomValidity('');
+            input.removeAttribute('min');
+            input.removeAttribute('max');
+        }
         const btn = document.getElementById('appointmentSubmitBtn');
         if (btn) btn.disabled = false;
     }
 
     async saveAppointment(event) {
         event.preventDefault();
+        if (this.applyAppointmentWorkingHoursConstraints()) {
+            document.getElementById('appointmentDate')?.reportValidity();
+            return;
+        }
+
         const id = document.getElementById('appointmentId').value;
         const payload = {
             patient_id: parseInt(document.getElementById('appointmentPatientId').value),
@@ -1866,7 +1975,7 @@ class NabdhSPA {
                 <div class="clinic-stat-card">
                     <div class="clinic-stat-icon danger">💰</div>
                     <div class="clinic-stat-meta">
-                        <div class="clinic-stat-value">${(data.total_clinic_revenue || 0).toLocaleString('ar-SA')} <small style="font-size:12px; font-weight:500;">ر.س</small></div>
+                        <div class="clinic-stat-value">${(data.total_clinic_revenue || 0).toLocaleString('ar-SA')} <small style="font-size:12px; font-weight:500;">ل.س</small></div>
                         <div class="clinic-stat-label">إجمالي إيراد الشهر</div>
                     </div>
                 </div>
@@ -1938,7 +2047,7 @@ class NabdhSPA {
                     <td><strong>${c.doctors_count || 0}</strong></td>
                     <td>${c.visits_count || 0}</td>
                     <td>${c.appointments_count || 0}</td>
-                    <td><strong style="color: #0f9f6e;">${(c.monthly_revenue || 0).toLocaleString('ar-SA')}</strong> <small style="color:#9ca3af;">ر.س</small></td>
+                    <td><strong style="color: #0f9f6e;">${(c.monthly_revenue || 0).toLocaleString('ar-SA')}</strong> <small style="color:#9ca3af;">ل.س</small></td>
                     <td><span class="clinic-status-pill clinic-status-${c.status}">${this.escapeHtml(c.status_label || c.status)}</span></td>
                     <td>
                         <div class="row-actions">
@@ -1993,6 +2102,107 @@ class NabdhSPA {
         this.loadClinicsTable(1);
     }
 
+    renderClinicWorkingHoursSelector(workingHours = []) {
+        const container = document.getElementById('clinicWorkingHours');
+        if (!container) return;
+
+        const byDay = {};
+        (workingHours || []).forEach(item => {
+            if (item && item.day_of_week) byDay[item.day_of_week] = item;
+        });
+
+        container.innerHTML = this.clinicWeekDays.map(day => {
+            const item = byDay[day.value] || {};
+            const isActive = !!item.is_active;
+            const start = item.start_time || '';
+            const end = item.end_time || '';
+            return `
+                <div class="clinic-working-hour-row ${isActive ? 'is-active' : ''}" data-day="${day.value}">
+                    <div class="clinic-working-day-name">${day.label}</div>
+                    <label class="clinic-working-toggle">
+                        <input type="checkbox" data-day-toggle="${day.value}" ${isActive ? 'checked' : ''} onchange="spa.toggleClinicWorkingDay('${day.value}')">
+                        <span data-day-toggle-label="${day.value}">${isActive ? 'دوام' : 'لا يوجد دوام'}</span>
+                    </label>
+                    <div class="clinic-working-time-fields">
+                        <input type="time" data-day-start="${day.value}" value="${start}" aria-label="بداية دوام ${day.label}">
+                        <span>إلى</span>
+                        <input type="time" data-day-end="${day.value}" value="${end}" aria-label="نهاية دوام ${day.label}">
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        this.clinicWeekDays.forEach(day => this.updateClinicWorkingDayRow(day.value));
+    }
+
+    toggleClinicWorkingDay(day) {
+        const toggle = document.querySelector(`[data-day-toggle="${day}"]`);
+        const start = document.querySelector(`[data-day-start="${day}"]`);
+        const end = document.querySelector(`[data-day-end="${day}"]`);
+        if (!toggle || !start || !end) return;
+
+        if (toggle.checked) {
+            if (!start.value) start.value = '09:00';
+            if (!end.value) end.value = '17:00';
+        } else {
+            start.value = '';
+            end.value = '';
+        }
+
+        this.updateClinicWorkingDayRow(day);
+    }
+
+    updateClinicWorkingDayRow(day) {
+        const row = document.querySelector(`[data-day="${day}"]`);
+        const toggle = document.querySelector(`[data-day-toggle="${day}"]`);
+        const label = document.querySelector(`[data-day-toggle-label="${day}"]`);
+        const start = document.querySelector(`[data-day-start="${day}"]`);
+        const end = document.querySelector(`[data-day-end="${day}"]`);
+        const isActive = !!toggle?.checked;
+
+        if (row) row.classList.toggle('is-active', isActive);
+        if (label) label.textContent = isActive ? 'دوام' : 'لا يوجد دوام';
+        if (start) {
+            start.required = isActive;
+            start.disabled = !isActive;
+        }
+        if (end) {
+            end.required = isActive;
+            end.disabled = !isActive;
+        }
+    }
+
+    collectClinicWorkingHours() {
+        return this.clinicWeekDays.map(day => {
+            const active = !!document.querySelector(`[data-day-toggle="${day.value}"]`)?.checked;
+            const start = document.querySelector(`[data-day-start="${day.value}"]`)?.value || null;
+            const end = document.querySelector(`[data-day-end="${day.value}"]`)?.value || null;
+            return {
+                day_of_week: day.value,
+                is_active: active,
+                start_time: active ? start : null,
+                end_time: active ? end : null,
+            };
+        });
+    }
+
+    validateClinicWorkingHours() {
+        const hours = this.collectClinicWorkingHours();
+        for (const item of hours) {
+            if (!item.is_active) continue;
+            const day = this.clinicWeekDays.find(d => d.value === item.day_of_week)?.label || item.day_of_week;
+            if (!item.start_time || !item.end_time) {
+                this.showAlert('pageAlert', `يرجى تحديد بداية ونهاية دوام يوم ${day}`, 'error');
+                return false;
+            }
+            if (item.end_time <= item.start_time) {
+                this.showAlert('pageAlert', `وقت نهاية دوام يوم ${day} يجب أن يكون بعد وقت البداية`, 'error');
+                return false;
+            }
+        }
+        return true;
+    }
+
     async openClinicModal(clinicId = null) {
         if (this.user.role !== 'admin') {
             this.showAlert('pageAlert', 'فقط المدير يمكنه إضافة/تعديل العيادات', 'error');
@@ -2004,6 +2214,7 @@ class NabdhSPA {
         form.reset();
         document.getElementById('clinicId').value = '';
         document.getElementById('clinicStatusGroup').style.display = 'none';
+        this.renderClinicWorkingHoursSelector();
 
         if (clinicId) {
             titleEl.textContent = 'تعديل العيادة';
@@ -2016,6 +2227,7 @@ class NabdhSPA {
                 document.getElementById('clinicPhone').value = c.phone || '';
                 document.getElementById('clinicLocation').value = c.location || '';
                 document.getElementById('clinicDescription').value = c.description || '';
+                this.renderClinicWorkingHoursSelector(c.working_hours || []);
                 if (c.status !== 'archived') {
                     document.getElementById('clinicStatusGroup').style.display = '';
                     document.getElementById('clinicStatus').value = c.status;
@@ -2036,12 +2248,15 @@ class NabdhSPA {
 
     async saveClinic(event) {
         event.preventDefault();
+        if (!this.validateClinicWorkingHours()) return;
+
         const id = document.getElementById('clinicId').value;
         const payload = {
             name: document.getElementById('clinicName').value.trim(),
             phone: document.getElementById('clinicPhone').value.trim() || null,
             location: document.getElementById('clinicLocation').value.trim() || null,
             description: document.getElementById('clinicDescription').value.trim() || null,
+            working_hours: this.collectClinicWorkingHours(),
         };
         if (!id) {
             payload.status = 'active';
@@ -2222,19 +2437,19 @@ class NabdhSPA {
                     <div class="drawer-stats-grid">
                         <div class="drawer-stat green">
                             <div class="label">إيراد اليوم</div>
-                            <div class="value">${(report.statistics.revenue_today || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ر.س</small></div>
+                            <div class="value">${(report.statistics.revenue_today || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ل.س</small></div>
                         </div>
                         <div class="drawer-stat purple">
                             <div class="label">إيراد الشهر</div>
-                            <div class="value">${(report.statistics.monthly_revenue || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ر.س</small></div>
+                            <div class="value">${(report.statistics.monthly_revenue || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ل.س</small></div>
                         </div>
                         <div class="drawer-stat amber">
                             <div class="label">إيراد السنة</div>
-                            <div class="value">${(report.statistics.yearly_revenue || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ر.س</small></div>
+                            <div class="value">${(report.statistics.yearly_revenue || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ل.س</small></div>
                         </div>
                         <div class="drawer-stat">
                             <div class="label">حصة المجمع (الشهر)</div>
-                            <div class="value">${(report.statistics.center_monthly_share || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ر.س</small></div>
+                            <div class="value">${(report.statistics.center_monthly_share || 0).toLocaleString('ar-SA')} <small style="font-size:11px; font-weight:500;">ل.س</small></div>
                         </div>
                     </div>
                     <div class="clinic-info-row" style="margin-top:12px;">
@@ -2256,7 +2471,7 @@ class NabdhSPA {
                                     <small>${this.escapeHtml(v.doctor_name)} • ${v.visit_date}</small>
                                 </div>
                                 <div class="doctor-stat">
-                                    <strong>${(v.amount_received || 0).toLocaleString('ar-SA')} ر.س</strong>
+                                    <strong>${(v.amount_received || 0).toLocaleString('ar-SA')} ل.س</strong>
                                     <span>${v.visit_type === 'examination' ? 'معاينة' : 'مراجعة'}</span>
                                 </div>
                             </div>
@@ -2377,7 +2592,7 @@ class NabdhSPA {
     // ===== Doctors Module =====
     async loadDoctorsPage() {
         const addBtn = document.getElementById('addDoctorBtn');
-        if (addBtn) addBtn.style.display = '';
+        if (addBtn) addBtn.style.display = this.user.role === 'admin' ? '' : 'none';
         if (this.user.role === 'doctor') {
             try {
                 const res = await this.apiCall('/api/user');
@@ -2402,12 +2617,20 @@ class NabdhSPA {
             ]);
             const clinicsData = await clinicsRes.json();
             const specsData = await specsRes.json();
+            const clinicOptions = (clinicsData.data || [])
+                .map(c => `<option value="${c.id}">${this.escapeHtml(c.name)}</option>`)
+                .join('');
             const sel = document.getElementById('doctorsClinicFilter');
             if (sel) {
                 const current = sel.value;
-                sel.innerHTML = '<option value="">جميع العيادات</option>' +
-                    (clinicsData.data || []).map(c => `<option value="${c.id}">${this.escapeHtml(c.name)}</option>`).join('');
+                sel.innerHTML = '<option value="">جميع العيادات</option>' + clinicOptions;
                 if (current) sel.value = current;
+            }
+            const modalClinicSel = document.getElementById('doctorClinicId');
+            if (modalClinicSel) {
+                const current = modalClinicSel.value;
+                modalClinicSel.innerHTML = '<option value="">— اختر العيادة —</option>' + clinicOptions;
+                if (current) modalClinicSel.value = current;
             }
             const specSel = document.getElementById('doctorsSpecializationFilter');
             if (specSel) {
@@ -2469,7 +2692,7 @@ class NabdhSPA {
                 <div class="doctor-stat-card">
                     <div class="doctor-stat-icon green">💰</div>
                     <div class="doctor-stat-info">
-                        <div class="doctor-stat-value">${revenue} ر.س</div>
+                        <div class="doctor-stat-value">${revenue} ل.س</div>
                         <div class="doctor-stat-label">إيرادات الأطباء (الشهر)</div>
                     </div>
                 </div>
@@ -2543,10 +2766,10 @@ class NabdhSPA {
                     </td>
                     <td>${d.clinic ? this.escapeHtml(d.clinic.name) : '—'}</td>
                     <td>${d.specialization ? this.escapeHtml(d.specialization) : '—'}</td>
-                    <td>${(d.examination_fee || 0).toLocaleString('en-US')} ر.س</td>
+                    <td>${(d.examination_fee || 0).toLocaleString('en-US')} ل.س</td>
                     <td><span class="badge badge-info">${d.patients_count || 0}</span></td>
                     <td><span class="badge badge-info">${d.visits_count || 0}</span></td>
-                    <td>${(d.monthly_revenue || 0).toLocaleString('en-US')} ر.س</td>
+                    <td>${(d.monthly_revenue || 0).toLocaleString('en-US')} ل.س</td>
                     <td><span class="doctor-status-pill ${status}"><span class="dot"></span>${statusLabel}</span></td>
                     <td>
                         <div class="actions-cell">
@@ -2619,7 +2842,7 @@ class NabdhSPA {
         document.getElementById('doctorId').value = '';
         document.getElementById('doctorStatusSection').style.display = 'none';
         document.getElementById('doctorPasswordGroup').style.display = '';
-        document.getElementById('doctorPasswordHint').textContent = 'اتركها فارغة للإبقاء على كلمة المرور الحالية';
+        document.getElementById('doctorPasswordHint').textContent = 'مطلوبة عند إضافة طبيب جديد';
         const pwInput = document.getElementById('doctorPassword');
         if (pwInput) pwInput.required = true;
 
@@ -2652,12 +2875,12 @@ class NabdhSPA {
         } else {
             title.textContent = 'إضافة طبيب جديد';
         }
-        if (modal) modal.classList.add('active');
+        if (modal) modal.classList.add('open');
     }
 
     closeDoctorModal() {
         const modal = document.getElementById('doctorModal');
-        if (modal) modal.classList.remove('active');
+        if (modal) modal.classList.remove('open');
     }
 
     async saveDoctor(event) {
@@ -2761,7 +2984,7 @@ class NabdhSPA {
         const content = document.getElementById('doctorDrawerContent');
         const title = document.getElementById('doctorDrawerTitle');
         const subtitle = document.getElementById('doctorDrawerSubtitle');
-        if (drawer) drawer.classList.add('active');
+        if (drawer) drawer.classList.add('open');
         if (content) content.innerHTML = '<div class="loading">جاري التحميل...</div>';
         if (title) title.textContent = 'تفاصيل الطبيب';
         if (subtitle) subtitle.textContent = '—';
@@ -2812,7 +3035,7 @@ class NabdhSPA {
                     <div class="doctor-info-row"><span class="info-label">الجوال</span><span class="info-value">${this.escapeHtml(info.phone || '—')}</span></div>
                     <div class="doctor-info-row"><span class="info-label">التخصص</span><span class="info-value">${this.escapeHtml(info.specialization || '—')}</span></div>
                     <div class="doctor-info-row"><span class="info-label">العيادة</span><span class="info-value">${info.clinic ? this.escapeHtml(info.clinic.name) : '—'}</span></div>
-                    <div class="doctor-info-row"><span class="info-label">سعر الكشف</span><span class="info-value">${fmt(info.examination_fee)} ر.س</span></div>
+                    <div class="doctor-info-row"><span class="info-label">سعر الكشف</span><span class="info-value">${fmt(info.examination_fee)} ل.س</span></div>
                     <div class="doctor-info-row"><span class="info-label">الحالة</span><span class="info-value">${info.is_archived ? 'مؤرشف' : (info.is_active ? '✅ نشط' : '⏸️ غير نشط')}</span></div>
                 </div>
 
@@ -2821,14 +3044,14 @@ class NabdhSPA {
                         <div class="doctor-stat-icon green">💰</div>
                         <div class="doctor-stat-info">
                             <div class="doctor-stat-value">${fmt(info.today_revenue)}</div>
-                            <div class="doctor-stat-label">إيراد اليوم (ر.س)</div>
+                            <div class="doctor-stat-label">إيراد اليوم (ل.س)</div>
                         </div>
                     </div>
                     <div class="doctor-stat-card">
                         <div class="doctor-stat-icon blue">📅</div>
                         <div class="doctor-stat-info">
                             <div class="doctor-stat-value">${fmt(info.monthly_revenue)}</div>
-                            <div class="doctor-stat-label">إيراد الشهر (ر.س)</div>
+                            <div class="doctor-stat-label">إيراد الشهر (ل.س)</div>
                         </div>
                     </div>
                 </div>
@@ -2851,7 +3074,7 @@ class NabdhSPA {
                 <div class="card" style="margin-top: 12px;">
                     <h3>🦷 الإجراءات</h3>
                     <div class="doctor-info-row"><span class="info-label">عدد الإجراءات</span><span class="info-value">${stats.procedures?.count || 0}</span></div>
-                    <div class="doctor-info-row"><span class="info-label">إيرادات الإجراءات</span><span class="info-value">${fmt(stats.procedures?.revenue)} ر.س</span></div>
+                    <div class="doctor-info-row"><span class="info-label">إيرادات الإجراءات</span><span class="info-value">${fmt(stats.procedures?.revenue)} ل.س</span></div>
                 </div>
 
                 <div class="card" style="margin-top: 12px;">
@@ -2868,31 +3091,31 @@ class NabdhSPA {
                     <div class="doctor-finance-card">
                         <div class="doctor-finance-row">
                             <span class="label">إيرادات المعاينات</span>
-                            <span class="value positive">${fmt(finance.examination_revenue)} ر.س</span>
+                            <span class="value positive">${fmt(finance.examination_revenue)} ل.س</span>
                         </div>
                         <div class="doctor-finance-row">
                             <span class="label">إيرادات المراجعات</span>
-                            <span class="value positive">${fmt(finance.review_revenue)} ر.س</span>
+                            <span class="value positive">${fmt(finance.review_revenue)} ل.س</span>
                         </div>
                         <div class="doctor-finance-row">
                             <span class="label">إيرادات الإجراءات</span>
-                            <span class="value positive">${fmt(finance.procedure_revenue)} ر.س</span>
+                            <span class="value positive">${fmt(finance.procedure_revenue)} ل.س</span>
                         </div>
                         <div class="doctor-finance-row">
                             <span class="label">إجمالي الإيرادات</span>
-                            <span class="value">${fmt(finance.gross_revenue)} ر.س</span>
+                            <span class="value">${fmt(finance.gross_revenue)} ل.س</span>
                         </div>
                         <div class="doctor-finance-row">
                             <span class="label">إجمالي الخصومات والسلف</span>
-                            <span class="value negative">-${fmt(finance.deductions_total)} ر.س</span>
+                            <span class="value negative">-${fmt(finance.deductions_total)} ل.س</span>
                         </div>
                         <div class="doctor-finance-row">
                             <span class="label">إجمالي المكافآت</span>
-                            <span class="value positive">+${fmt(finance.bonuses_total)} ر.س</span>
+                            <span class="value positive">+${fmt(finance.bonuses_total)} ل.س</span>
                         </div>
                         <div class="doctor-finance-row total">
                             <span class="label">صافي الأرباح</span>
-                            <span class="value">${fmt(finance.net_earnings)} ر.س</span>
+                            <span class="value">${fmt(finance.net_earnings)} ل.س</span>
                         </div>
                     </div>
                     ${isAdmin ? `<button class="btn btn-success" style="width:100%; margin-top:8px;" onclick="spa.openDeductionModal(${info.id})">➕ إضافة خصم / سلفة / مكافأة</button>` : ''}
@@ -2981,7 +3204,7 @@ class NabdhSPA {
                     ${deductions && deductions.length > 0 ? `
                         ${deductions.map(d => `
                             <div class="deduction-item ${d.type}">
-                                <div class="amount ${d.type === 'bonus' ? 'positive' : 'negative'}">${d.type === 'bonus' ? '+' : '-'}${fmt(d.amount)} ر.س</div>
+                                <div class="amount ${d.type === 'bonus' ? 'positive' : 'negative'}">${d.type === 'bonus' ? '+' : '-'}${fmt(d.amount)} ل.س</div>
                                 <div class="reason">${this.escapeHtml(d.reason || '')}</div>
                                 <span class="type-badge">${d.type_label || d.type}</span>
                                 <span style="font-size: 12px; color: #6b7280;">${d.deduction_date || ''}</span>
@@ -3006,7 +3229,7 @@ class NabdhSPA {
 
     closeDoctorDrawer() {
         const drawer = document.getElementById('doctorDrawer');
-        if (drawer) drawer.classList.remove('active');
+        if (drawer) drawer.classList.remove('open');
     }
 
     openDeductionModal(doctorId = null) {
@@ -3015,12 +3238,12 @@ class NabdhSPA {
         if (form) form.reset();
         document.getElementById('deductionDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('deductionDoctorId').value = doctorId || this.currentDoctorId || '';
-        if (modal) modal.classList.add('active');
+        if (modal) modal.classList.add('open');
     }
 
     closeDeductionModal() {
         const modal = document.getElementById('deductionModal');
-        if (modal) modal.classList.remove('active');
+        if (modal) modal.classList.remove('open');
     }
 
     async saveDeduction(event) {

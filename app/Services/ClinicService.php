@@ -9,6 +9,7 @@ use App\Events\ClinicStatusChanged;
 use App\Events\ClinicUpdated;
 use App\Exceptions\ClinicOperationException;
 use App\Models\Clinic;
+use App\Models\ClinicWorkingHour;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,7 @@ class ClinicService
 {
     public function paginate(array $filters, int $perPage = 20, ?User $viewer = null): LengthAwarePaginator
     {
-        $query = Clinic::query()->withCount(['users', 'visits', 'appointments']);
+        $query = Clinic::query()->with('workingHours')->withCount(['users', 'visits', 'appointments']);
 
         if ($viewer && $viewer->isDoctor()) {
             $query->where('id', $viewer->clinic_id);
@@ -48,7 +49,17 @@ class ClinicService
 
     public function listActive(): Collection
     {
-        return Clinic::active()->orderBy('name')->get(['id', 'name', 'status']);
+        return Clinic::active()
+            ->with('workingHours')
+            ->orderBy('name')
+            ->get(['id', 'name', 'status'])
+            ->map(fn (Clinic $clinic) => [
+                'id' => $clinic->id,
+                'name' => $clinic->name,
+                'status' => $clinic->status?->value,
+                'accepts_appointments' => $clinic->acceptsAppointments(),
+                'working_hours' => $clinic->workingHoursSchedule(),
+            ]);
     }
 
     public function createClinic(array $data, ?User $actor = null): Clinic
@@ -61,8 +72,9 @@ class ClinicService
                 'phone' => $data['phone'] ?? null,
                 'status' => $data['status'] ?? ClinicStatus::Active->value,
             ]);
+            $this->syncWorkingHours($clinic, $data['working_hours'] ?? []);
             event(new ClinicCreated($clinic, $actor));
-            return $clinic;
+            return $clinic->fresh('workingHours');
         });
     }
 
@@ -88,13 +100,16 @@ class ClinicService
         }
 
         $clinic->save();
+        if (array_key_exists('working_hours', $data)) {
+            $this->syncWorkingHours($clinic, $data['working_hours'] ?? []);
+        }
         event(new ClinicUpdated($clinic, $actor));
 
         if (isset($data['status']) && $previousStatus !== $clinic->status) {
             event(new ClinicStatusChanged($clinic, $previousStatus, $actor));
         }
 
-        return $clinic->fresh();
+        return $clinic->fresh('workingHours');
     }
 
     public function archiveClinic(Clinic $clinic, ?User $actor = null): Clinic
@@ -297,5 +312,24 @@ class ClinicService
             'recent_appointments' => $recentAppointments,
             'recent_patients' => $recentPatients,
         ];
+    }
+
+    protected function syncWorkingHours(Clinic $clinic, array $workingHours): void
+    {
+        $byDay = collect($workingHours)->keyBy('day_of_week');
+
+        foreach (ClinicWorkingHour::DAYS as $day) {
+            $payload = $byDay->get($day, []);
+            $isActive = (bool) ($payload['is_active'] ?? false);
+
+            $clinic->workingHours()->updateOrCreate(
+                ['day_of_week' => $day],
+                [
+                    'is_active' => $isActive,
+                    'start_time' => $isActive ? ($payload['start_time'] ?? '09:00') : null,
+                    'end_time' => $isActive ? ($payload['end_time'] ?? '17:00') : null,
+                ],
+            );
+        }
     }
 }

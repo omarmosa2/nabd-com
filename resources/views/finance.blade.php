@@ -149,27 +149,27 @@
         function renderStats(summary) {
             document.getElementById('statsGrid').innerHTML = `
                 <div class="stat-card">
-                    <h3>${summary.total_examination_fees} ر.س</h3>
+                    <h3>${summary.total_examination_fees} ل.س</h3>
                     <p>إجمالي رسوم الكشف</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.total_amount_received} ر.س</h3>
+                    <h3>${summary.total_amount_received} ل.س</h3>
                     <p>المبلغ المستلم</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.total_center_share} ر.س</h3>
+                    <h3>${summary.total_center_share} ل.س</h3>
                     <p>حصة المجمع</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.total_doctor_share} ر.س</h3>
+                    <h3>${summary.total_doctor_share} ل.س</h3>
                     <p>إجمالي مستحقات الأطباء</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.total_deductions} ر.س</h3>
+                    <h3>${summary.total_deductions} ل.س</h3>
                     <p>إجمالي الخصومات</p>
                 </div>
                 <div class="stat-card">
-                    <h3>${summary.net_doctor_payable} ر.س</h3>
+                    <h3>${summary.net_doctor_payable} ل.س</h3>
                     <p>صافي مستحقات الأطباء</p>
                 </div>
             `;
@@ -187,9 +187,9 @@
                     <td onclick="openDetailsModal(${doc.doctor_id})">${doc.doctor_name}</td>
                     <td>${doc.clinic || '-'}</td>
                     <td><span class="badge badge-success">${doc.total_visits}</span></td>
-                    <td>${doc.doctor_share} ر.س</td>
-                    <td><span class="badge badge-danger">${doc.deductions} ر.س</span></td>
-                    <td><strong>${doc.net_payable} ر.س</strong></td>
+                    <td>${doc.doctor_share} ل.س</td>
+                    <td><span class="badge badge-danger">${doc.deductions} ل.س</span></td>
+                    <td><strong>${doc.net_payable} ل.س</strong></td>
                     <td>
                         <button class="btn btn-danger" onclick="openDeductionModal(${doc.doctor_id}, '${doc.doctor_name}')">خصم</button>
                     </td>
@@ -265,11 +265,11 @@
                         <div style="color: #666; font-size: 12px;">عدد الزيارات</div>
                     </div>
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #28a745;">${data.total_share} ر.س</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #28a745;">${data.total_share} ل.س</div>
                         <div style="color: #666; font-size: 12px;">إجمالي الحصة</div>
                     </div>
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${data.total_deductions} ر.س</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${data.total_deductions} ل.س</div>
                         <div style="color: #666; font-size: 12px;">الخصومات</div>
                     </div>
                 </div>
@@ -285,7 +285,7 @@
                         <td>${v.date}</td>
                         <td>${v.patient}</td>
                         <td>${v.type === 'examination' ? 'معاينة' : 'مراجعة'}</td>
-                        <td>${v.doctor_share} ر.س</td>
+                        <td>${v.doctor_share} ل.س</td>
                     </tr>
                 `).join('');
                 html += '</tbody></table>';
@@ -297,7 +297,7 @@
                 html += data.deductions.map(d => `
                     <tr>
                         <td>${d.date}</td>
-                        <td>${d.amount} ر.س</td>
+                        <td>${d.amount} ل.س</td>
                         <td>${d.reason}</td>
                     </tr>
                 `).join('');

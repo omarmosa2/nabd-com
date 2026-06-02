@@ -13,6 +13,7 @@ use App\Events\AppointmentUpdated;
 use App\Exceptions\AppointmentConflictException;
 use App\Models\Appointment;
 use App\Models\Clinic;
+use App\Models\ClinicWorkingHour;
 use App\Models\Patient;
 use App\Models\User;
 use App\Models\Visit;
@@ -102,8 +103,9 @@ class AppointmentService
         $duration = (int) ($data['duration_minutes'] ?? self::DEFAULT_DURATION_MINUTES);
         $date = Carbon::parse($data['appointment_date']);
 
-        $this->assertClinicAcceptsAppointments((int) $data['clinic_id']);
+        $clinic = $this->assertClinicAcceptsAppointments((int) $data['clinic_id']);
         $this->assertDoctorAcceptsAppointments((int) $data['doctor_id']);
+        $this->assertWithinClinicWorkingHours($clinic, $date, $duration);
         $this->assertNoConflict(
             doctorId: (int) $data['doctor_id'],
             date: $date,
@@ -142,14 +144,16 @@ class AppointmentService
             $newDoctor !== $appointment->doctor_id ||
             $newClinic !== $appointment->clinic_id;
 
-        if ($newClinic !== $appointment->clinic_id) {
-            $this->assertClinicAcceptsAppointments($newClinic);
+        $clinic = null;
+        if ($newClinic !== $appointment->clinic_id || $significantChange) {
+            $clinic = $this->assertClinicAcceptsAppointments($newClinic);
         }
         if ($newDoctor !== $appointment->doctor_id) {
             $this->assertDoctorAcceptsAppointments($newDoctor);
         }
 
         if ($significantChange) {
+            $this->assertWithinClinicWorkingHours($clinic, $newDate, $newDuration);
             $this->assertNoConflict(
                 doctorId: $newDoctor,
                 date: $newDate,
@@ -275,11 +279,37 @@ class AppointmentService
     /**
      * @return array{available: bool, conflicts: array<int, array<string, mixed>>}
      */
-    public function checkAvailability(int $doctorId, Carbon $date, int $duration = self::DEFAULT_DURATION_MINUTES, ?int $ignoreId = null): array
+    public function checkAvailability(
+        int $doctorId,
+        Carbon $date,
+        int $duration = self::DEFAULT_DURATION_MINUTES,
+        ?int $ignoreId = null,
+        ?int $clinicId = null,
+    ): array
     {
+        $clinic = $this->resolveClinicForAvailability($doctorId, $clinicId);
+        if (!$clinic) {
+            return [
+                'available' => false,
+                'reason' => 'clinic_not_found',
+                'message' => 'لم يتم العثور على العيادة المرتبطة بالموعد.',
+                'conflicts' => [],
+            ];
+        }
+
+        $issue = $this->clinicAvailabilityIssue($clinic, $date, $duration);
+        if ($issue) {
+            return array_merge([
+                'available' => false,
+                'conflicts' => [],
+            ], $issue);
+        }
+
         $conflicts = $this->findConflicts($doctorId, $date, $duration, $ignoreId);
         return [
             'available' => $conflicts->isEmpty(),
+            'reason' => $conflicts->isEmpty() ? null : 'doctor_conflict',
+            'message' => $conflicts->isEmpty() ? 'الموعد متاح' : 'الطبيب لديه موعد آخر في نفس الفترة الزمنية.',
             'conflicts' => $conflicts->map(fn (Appointment $a) => [
                 'id' => $a->id,
                 'appointment_date' => $a->appointment_date->toDateTimeString(),
@@ -290,9 +320,9 @@ class AppointmentService
         ];
     }
 
-    protected function assertClinicAcceptsAppointments(int $clinicId): void
+    protected function assertClinicAcceptsAppointments(int $clinicId): Clinic
     {
-        $clinic = Clinic::find($clinicId);
+        $clinic = Clinic::with('workingHours')->find($clinicId);
         if (!$clinic) {
             throw new AppointmentConflictException('العيادة غير موجودة.', []);
         }
@@ -302,6 +332,8 @@ class AppointmentService
                 [['clinic_id' => $clinicId, 'status' => $clinic->status?->value]],
             );
         }
+
+        return $clinic;
     }
 
     protected function assertDoctorAcceptsAppointments(int $doctorId): void
@@ -325,6 +357,74 @@ class AppointmentService
                 [['doctor_id' => $doctorId, 'is_active' => false]],
             );
         }
+    }
+
+    protected function assertWithinClinicWorkingHours(Clinic $clinic, Carbon $date, int $duration): void
+    {
+        $issue = $this->clinicAvailabilityIssue($clinic, $date, $duration);
+        if ($issue) {
+            throw new AppointmentConflictException($issue['message'], [$issue]);
+        }
+    }
+
+    protected function resolveClinicForAvailability(int $doctorId, ?int $clinicId = null): ?Clinic
+    {
+        if ($clinicId) {
+            return Clinic::with('workingHours')->find($clinicId);
+        }
+
+        $doctor = User::find($doctorId);
+        if (!$doctor || !$doctor->clinic_id) {
+            return null;
+        }
+
+        return Clinic::with('workingHours')->find($doctor->clinic_id);
+    }
+
+    protected function clinicAvailabilityIssue(Clinic $clinic, Carbon $date, int $duration): ?array
+    {
+        $day = Clinic::dayOfWeekKey($date);
+        $dayLabel = ClinicWorkingHour::DAY_LABELS[$day] ?? $day;
+
+        if (!$clinic->acceptsAppointments()) {
+            return [
+                'reason' => 'clinic_inactive',
+                'message' => 'العيادة غير نشطة ولا تستقبل مواعيد جديدة.',
+                'working_hour' => [
+                    'day_of_week' => $day,
+                    'day_label' => $dayLabel,
+                    'is_active' => false,
+                    'start_time' => null,
+                    'end_time' => null,
+                ],
+            ];
+        }
+
+        $workingHour = $clinic->workingHourFor($date);
+        if (!$workingHour || !$workingHour->is_active) {
+            return [
+                'reason' => 'clinic_closed_day',
+                'message' => "لا يوجد دوام للعيادة يوم {$dayLabel}.",
+                'working_hour' => [
+                    'day_of_week' => $day,
+                    'day_label' => $dayLabel,
+                    'is_active' => false,
+                    'start_time' => null,
+                    'end_time' => null,
+                ],
+            ];
+        }
+
+        $window = $workingHour->toScheduleArray();
+        if (!$clinic->isOpenFor($date, $duration)) {
+            return [
+                'reason' => 'outside_working_hours',
+                'message' => "الموعد خارج دوام العيادة يوم {$dayLabel}. الدوام من {$window['start_time']} إلى {$window['end_time']}.",
+                'working_hour' => $window,
+            ];
+        }
+
+        return null;
     }
 
     public function convertToVisit(Appointment $appointment, array $visitOverrides = [], ?User $actor = null): Visit

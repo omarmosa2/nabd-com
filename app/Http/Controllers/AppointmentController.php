@@ -101,6 +101,7 @@ class AppointmentController extends Controller
             date: Carbon::parse($request->input('appointment_date')),
             duration: $request->duration(),
             ignoreId: $request->filled('ignore_id') ? (int) $request->input('ignore_id') : null,
+            clinicId: $request->filled('clinic_id') ? (int) $request->input('clinic_id') : null,
         );
         return response()->json($result);
     }
