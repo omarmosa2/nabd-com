@@ -59,7 +59,7 @@ class ReceptionController extends Controller
     {
         $request->validate(['clinic_id' => 'required|exists:clinics,id']);
 
-        $doctors = User::where('role', 'doctor')
+        $doctors = User::activeDoctors()
             ->where('clinic_id', $request->clinic_id)
             ->get(['id', 'full_name', 'examination_fee']);
 

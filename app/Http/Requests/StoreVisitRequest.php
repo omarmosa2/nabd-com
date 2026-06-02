@@ -57,6 +57,17 @@ class StoreVisitRequest extends FormRequest
                     $v->errors()->add('doctor_id', 'الطبيب غير مفعّل ولا يستقبل زيارات جديدة.');
                 }
             }
+
+            if (
+                $doctorId &&
+                $clinicId &&
+                isset($doctor) &&
+                $doctor &&
+                $doctor->isDoctor() &&
+                (int) $doctor->clinic_id !== (int) $clinicId
+            ) {
+                $v->errors()->add('doctor_id', 'الطبيب لا ينتمي إلى العيادة المحددة.');
+            }
         });
     }
 }

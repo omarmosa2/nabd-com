@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{doctor}/statistics', [DoctorController::class, 'statistics']);
         Route::get('/{doctor}/finance', [DoctorController::class, 'finance']);
         Route::get('/{doctor}/schedule', [DoctorController::class, 'schedule']);
+        Route::get('/{doctor}/appointments', [DoctorController::class, 'schedule']);
         Route::get('/{doctor}/patients', [DoctorController::class, 'patients']);
         Route::post('/{doctor}/archive', [DoctorController::class, 'archive']);
         Route::post('/{doctor}/activate', [DoctorController::class, 'activate']);

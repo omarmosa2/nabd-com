@@ -320,7 +320,7 @@ class ClinicService
 
         foreach (ClinicWorkingHour::DAYS as $day) {
             $payload = $byDay->get($day, []);
-            $isActive = (bool) ($payload['is_active'] ?? false);
+            $isActive = filter_var($payload['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             $clinic->workingHours()->updateOrCreate(
                 ['day_of_week' => $day],

@@ -44,6 +44,7 @@ class DoctorController extends Controller
 
     public function show(Request $request, User $doctor): DoctorResource
     {
+        $this->assertDoctor($doctor);
         $this->authorizeView($request, $doctor);
         $doctor->load('clinic');
         $doctor->loadCount(['visits', 'appointments', 'deductions']);
@@ -59,6 +60,7 @@ class DoctorController extends Controller
 
     public function update(UpdateDoctorRequest $request, User $doctor): DoctorResource
     {
+        $this->assertDoctor($doctor);
         $updated = $this->service->updateDoctor($doctor, $request->validated(), $request->user());
         $updated->loadCount(['visits', 'appointments', 'deductions']);
         return new DoctorResource($updated);
@@ -66,6 +68,7 @@ class DoctorController extends Controller
 
     public function destroy(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         if (!$request->user()->isAdmin()) {
             throw new DoctorOperationException('غير مصرح لك بحذف طبيب.', [], [], 403);
         }
@@ -75,30 +78,44 @@ class DoctorController extends Controller
 
     public function archive(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
+        if (!$request->user()->can('archive', $doctor)) {
+            throw new DoctorOperationException('غير مصرح لك بأرشفة طبيب.', [], [], 403);
+        }
         $this->service->archiveDoctor($doctor, $request->user());
         return response()->json(['message' => 'تم أرشفة الطبيب بنجاح.']);
     }
 
     public function activate(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
+        if (!$request->user()->can('activate', $doctor)) {
+            throw new DoctorOperationException('غير مصرح لك بتفعيل طبيب.', [], [], 403);
+        }
         $this->service->activateDoctor($doctor, $request->user());
         return response()->json(['message' => 'تم تفعيل الطبيب بنجاح.']);
     }
 
     public function deactivate(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
+        if (!$request->user()->can('deactivate', $doctor)) {
+            throw new DoctorOperationException('غير مصرح لك بإلغاء تفعيل طبيب.', [], [], 403);
+        }
         $this->service->deactivateDoctor($doctor, $request->user());
         return response()->json(['message' => 'تم إلغاء تفعيل الطبيب بنجاح.']);
     }
 
     public function statistics(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         $this->authorizeView($request, $doctor);
         return response()->json(['data' => $this->service->getStatistics($doctor)]);
     }
 
     public function finance(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         if (!$request->user()->can('viewFinance', $doctor)) {
             throw new DoctorOperationException('غير مصرح بعرض البيانات المالية.', [], [], 403);
         }
@@ -113,6 +130,7 @@ class DoctorController extends Controller
 
     public function schedule(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         $this->authorizeView($request, $doctor);
         return response()->json([
             'data' => $this->service->getSchedule(
@@ -125,6 +143,7 @@ class DoctorController extends Controller
 
     public function patients(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         $this->authorizeView($request, $doctor);
         return response()->json([
             'data' => $this->service->getPatients($doctor, (int) $request->input('limit', 20)),
@@ -135,6 +154,13 @@ class DoctorController extends Controller
     {
         if (!$request->user()->can('view', $doctor)) {
             throw new DoctorOperationException('غير مصرح لك بعرض هذا الطبيب.', [], [], 403);
+        }
+    }
+
+    protected function assertDoctor(User $doctor): void
+    {
+        if (!$doctor->isDoctor()) {
+            throw new DoctorOperationException('المستخدم المحدد ليس طبيباً.', [], [], 404);
         }
     }
 }

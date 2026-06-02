@@ -16,6 +16,7 @@ class DoctorDeductionController extends Controller
 
     public function index(Request $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         if (!$request->user()->can('viewFinance', $doctor)) {
             throw new DoctorOperationException('غير مصرح بعرض الخصومات.', [], [], 403);
         }
@@ -28,17 +29,26 @@ class DoctorDeductionController extends Controller
 
     public function store(StoreDeductionRequest $request, User $doctor): JsonResponse
     {
+        $this->assertDoctor($doctor);
         $deduction = $this->service->addDeduction($doctor, $request->validated(), $request->user());
         return (new DoctorDeductionResource($deduction))->response()->setStatusCode(201);
     }
 
     public function destroy(Request $request, User $doctor, int $deduction): JsonResponse
     {
+        $this->assertDoctor($doctor);
         if (!$request->user()->isAdmin()) {
             throw new DoctorOperationException('غير مصرح بحذف الخصم.', [], [], 403);
         }
         $d = $doctor->deductions()->findOrFail($deduction);
         $d->delete();
         return response()->json(['message' => 'تم حذف الخصم بنجاح.']);
+    }
+
+    protected function assertDoctor(User $doctor): void
+    {
+        if (!$doctor->isDoctor()) {
+            throw new DoctorOperationException('المستخدم المحدد ليس طبيباً.', [], [], 404);
+        }
     }
 }

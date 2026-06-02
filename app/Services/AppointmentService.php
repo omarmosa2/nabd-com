@@ -105,6 +105,7 @@ class AppointmentService
 
         $clinic = $this->assertClinicAcceptsAppointments((int) $data['clinic_id']);
         $this->assertDoctorAcceptsAppointments((int) $data['doctor_id']);
+        $this->assertDoctorBelongsToClinic((int) $data['doctor_id'], (int) $data['clinic_id']);
         $this->assertWithinClinicWorkingHours($clinic, $date, $duration);
         $this->assertNoConflict(
             doctorId: (int) $data['doctor_id'],
@@ -151,6 +152,9 @@ class AppointmentService
         if ($newDoctor !== $appointment->doctor_id) {
             $this->assertDoctorAcceptsAppointments($newDoctor);
         }
+        if ($significantChange) {
+            $this->assertDoctorBelongsToClinic($newDoctor, $newClinic);
+        }
 
         if ($significantChange) {
             $this->assertWithinClinicWorkingHours($clinic, $newDate, $newDuration);
@@ -162,7 +166,7 @@ class AppointmentService
             );
         }
 
-        return DB::transaction(function () use ($appointment, $data, $newDate, $newDuration, $newClinic, $actor) {
+        return DB::transaction(function () use ($appointment, $data, $newDate, $newDuration, $newDoctor, $newClinic, $actor) {
             $previousStatus = $appointment->status;
             $appointment->fill([
                 'patient_id' => $data['patient_id'] ?? $appointment->patient_id,
@@ -296,6 +300,14 @@ class AppointmentService
                 'conflicts' => [],
             ];
         }
+        if ($clinicId && !$this->doctorBelongsToClinic($doctorId, $clinicId)) {
+            return [
+                'available' => false,
+                'reason' => 'doctor_clinic_mismatch',
+                'message' => 'الطبيب لا ينتمي إلى العيادة المحددة.',
+                'conflicts' => [],
+            ];
+        }
 
         $issue = $this->clinicAvailabilityIssue($clinic, $date, $duration);
         if ($issue) {
@@ -357,6 +369,24 @@ class AppointmentService
                 [['doctor_id' => $doctorId, 'is_active' => false]],
             );
         }
+    }
+
+    protected function assertDoctorBelongsToClinic(int $doctorId, int $clinicId): void
+    {
+        if (!$this->doctorBelongsToClinic($doctorId, $clinicId)) {
+            throw new AppointmentConflictException(
+                'الطبيب لا ينتمي إلى العيادة المحددة.',
+                [['doctor_id' => $doctorId, 'clinic_id' => $clinicId]],
+            );
+        }
+    }
+
+    protected function doctorBelongsToClinic(int $doctorId, int $clinicId): bool
+    {
+        return User::query()
+            ->where('id', $doctorId)
+            ->where('clinic_id', $clinicId)
+            ->exists();
     }
 
     protected function assertWithinClinicWorkingHours(Clinic $clinic, Carbon $date, int $duration): void
