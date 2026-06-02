@@ -4,205 +4,521 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة المرضى - مجمع نبض الطبي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
-        
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .header h1 { font-size: 32px; margin-bottom: 10px; }
-        .header p { opacity: 0.9; font-size: 16px; }
-        
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .card h2 { color: #333; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-        
-        .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 200px; }
-        .filter-group label { color: #333; font-weight: 600; margin-bottom: 5px; font-size: 12px; }
-        .filter-group input, .filter-group select { padding: 10px; border: 2px solid #e1e1e1; border-radius: 8px; font-size: 14px; }
-        .filter-group input:focus, .filter-group select:focus { outline: none; border-color: #667eea; }
-        
-        .btn { padding: 12px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
-        .btn:hover { background: #5568d3; transform: translateY(-2px); }
-        .btn-success { background: #28a745; }
-        .btn-success:hover { background: #218838; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-secondary { background: #6c757d; }
-        .btn-secondary:hover { background: #5a6268; }
-        .btn-sm { padding: 8px 16px; font-size: 12px; white-space: nowrap; }
-        .btn-eye { background: #17a2b8; padding: 8px 12px; min-width: 45px; }
-        .btn-eye:hover { background: #138496; }
-        
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+            background: #f3f5f9;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .page { max-width: 1500px; margin: 0 auto; padding: 24px; }
+
+        /* ===== Page Header ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .title-section { text-align: right; }
+        .title-section h1 { font-size: 28px; font-weight: 700; color: #111827; }
+        .title-section p { font-size: 14px; color: #6b7280; margin-top: 6px; }
+
+        .actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: #1d8eff;
+            color: white;
+            border-color: #1d8eff;
+        }
+        .btn-primary:hover { background: #0f7ce0; border-color: #0f7ce0; }
+
+        .btn-outline {
+            background: white;
+            color: #1f2937;
+            border-color: #e5e7eb;
+        }
+        .btn-outline:hover { background: #f9fafb; }
+
+        .btn svg { width: 16px; height: 16px; }
+
+        /* ===== Filter Card ===== */
+        .filter-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+        .filter-btn svg { width: 16px; height: 16px; }
+
+        .search-input {
+            flex: 1;
+            min-width: 220px;
+            padding: 11px 16px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            color: #1f2937;
+            text-align: right;
+            direction: rtl;
+        }
+        .search-input::placeholder { color: #9ca3af; }
+        .search-input:focus {
+            outline: none;
+            border-color: #1d8eff;
+            background: white;
+        }
+        .search-input.large { flex: 2; }
+
+        /* ===== Table Card ===== */
+        .table-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .table-wrapper { overflow-x: auto; }
+
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f8f9fa; padding: 15px; text-align: right; color: #666; font-weight: 600; border-bottom: 2px solid #e9ecef; }
-        td { padding: 15px; border-bottom: 1px solid #e9ecef; color: #333; }
-        td:last-child { white-space: nowrap; }
-        tr:hover { background: #f8f9fa; cursor: pointer; }
-        
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .badge-success { background: #d4edda; color: #155724; }
-        .badge-info { background: #d1ecf1; color: #0c5460; }
-        .badge-warning { background: #fff3cd; color: #856404; }
-        
-        .loading { text-align: center; padding: 40px; color: #666; }
-        
-        .pagination { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-        .pagination button { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; }
-        .pagination button.active { background: #667eea; color: white; }
-        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+
+        thead th {
+            background: #f8fafc;
+            padding: 14px 16px;
+            text-align: right;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        thead th .sort-icon {
+            display: inline-block;
+            margin-right: 6px;
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+        tbody td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #1f2937;
+            vertical-align: middle;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: #fafbfc; }
+
+        .col-num { color: #9ca3af; font-weight: 500; width: 50px; }
+
+        /* Patient cell with avatar */
+        .patient-cell { display: flex; align-items: center; gap: 12px; min-width: 200px; }
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #1d8eff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .patient-name { font-weight: 500; color: #111827; }
+
+        /* Gender badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-male { background: #dbeafe; color: #1d4ed8; }
+        .badge-female { background: #f3e8ff; color: #6b21a8; }
+
+        /* Age cell */
+        .age-cell { color: #4b5563; }
+        .age-cell .unit { color: #9ca3af; font-size: 13px; margin-right: 4px; }
+
+        /* Phone cell */
+        .phone-cell { color: #4b5563; }
+        .phone-cell.empty { color: #9ca3af; }
+
+        /* Toggle switch */
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #e5e7eb;
+            border-radius: 999px;
+            transition: 0.2s;
+        }
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            height: 16px; width: 16px;
+            right: 2px; top: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle input:checked + .toggle-slider { background: #1d8eff; }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(-16px); }
+
+        /* Date cell */
+        .date-cell { color: #4b5563; font-variant-numeric: tabular-nums; }
+
+        /* Actions */
+        .actions-cell { white-space: nowrap; }
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .action-btn:hover { background: #f3f4f6; }
+        .action-btn svg { width: 16px; height: 16px; }
+        .action-view { color: #1d8eff; }
+        .action-edit { color: #1d8eff; }
+        .action-delete { color: #ef4444; }
+        .action-more { color: #6b7280; }
+
+        /* ===== Stats Cards ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .stat-icon svg { width: 24px; height: 24px; }
+        .stat-icon.blue { background: #eff6ff; color: #1d8eff; }
+        .stat-icon.green { background: #ecfdf5; color: #10b981; }
+        .stat-icon.orange { background: #fffbeb; color: #f59e0b; }
+        .stat-icon.purple { background: #f5f3ff; color: #8b5cf6; }
+
+        .stat-content { display: flex; flex-direction: column; }
+        .stat-number { font-size: 24px; font-weight: 700; color: #111827; line-height: 1.2; }
+        .stat-label { font-size: 13px; color: #6b7280; margin-top: 4px; }
+
+        /* ===== Pagination ===== */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-info { color: #6b7280; font-size: 13px; }
+        .page-controls { display: flex; align-items: center; gap: 12px; color: #6b7280; font-size: 13px; }
+        .page-size-select {
+            padding: 6px 28px 6px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            background: white;
+            color: #1f2937;
+            cursor: pointer;
+        }
+
+        .page-nav { display: flex; align-items: center; gap: 8px; }
+        .page-text { color: #6b7280; font-size: 13px; margin-left: 8px; }
+        .page-btn {
+            width: 32px; height: 32px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+        .page-btn:hover:not(:disabled) { background: #f9fafb; border-color: #d1d5db; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-btn svg { width: 14px; height: 14px; }
+
+        /* ===== Loading & Empty ===== */
+        .loading, .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+
+        /* ===== Modal (kept for future integration) ===== */
+        .modal {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
         .modal.open { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h2 { color: #333; font-size: 24px; }
-        .modal-close { background: none; border: none; font-size: 30px; cursor: pointer; color: #666; }
-        
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { font-size: 20px; font-weight: 700; }
+        .modal-close {
+            background: none; border: none; font-size: 24px;
+            cursor: pointer; color: #9ca3af;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
         .form-group { display: flex; flex-direction: column; }
-        .form-group label { color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 2px solid #e1e1e1; border-radius: 8px; font-size: 14px; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
-        .form-group input:read-only { background: #f8f9fa; }
-        
-        /* Drawer */
-        .drawer { position: fixed; top: 0; left: -600px; width: 600px; height: 100vh; background: white; box-shadow: 5px 0 30px rgba(0,0,0,0.2); transition: left 0.3s; z-index: 1000; overflow-y: auto; }
-        .drawer.open { left: 0; }
-        .drawer-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; position: sticky; top: 0; z-index: 10; }
-        .drawer-header h2 { font-size: 24px; margin-bottom: 10px; }
-        .drawer-close { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; }
-        .drawer-content { padding: 30px; }
-        
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-        .info-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
-        .info-item .label { color: #666; font-size: 12px; margin-bottom: 5px; }
-        .info-item .value { color: #333; font-size: 16px; font-weight: 600; }
-        
-        .visit-card { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #667eea; }
-        .visit-card h4 { color: #333; margin-bottom: 10px; }
-        .visit-card p { color: #666; font-size: 14px; margin-bottom: 5px; }
-        
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        
-        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
-        .empty-state .icon { font-size: 64px; margin-bottom: 20px; opacity: 0.3; }
-        .empty-state h3 { font-size: 20px; margin-bottom: 10px; }
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: #1d8eff;
+        }
 
-        /* Confirmation Dialog */
-        .confirm-dialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
-        .confirm-dialog.open { display: flex; }
-        .confirm-content { background: white; padding: 40px; border-radius: 15px; max-width: 450px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .confirm-icon { font-size: 60px; text-align: center; margin-bottom: 20px; }
-        .confirm-title { color: #333; font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 15px; }
-        .confirm-message { color: #666; font-size: 16px; text-align: center; margin-bottom: 30px; line-height: 1.6; }
-        .confirm-buttons { display: flex; gap: 15px; justify-content: center; }
-        .confirm-buttons button { padding: 12px 30px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .btn-confirm-yes { background: #dc3545; color: white; }
-        .btn-confirm-yes:hover { background: #c82333; transform: translateY(-2px); }
-        .btn-confirm-no { background: #6c757d; color: white; }
-        .btn-confirm-no:hover { background: #5a6268; transform: translateY(-2px); }
-
-        /* View Details Modal */
-        .view-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center; }
-        .view-modal.open { display: flex; }
-        .view-modal-content { background: white; padding: 30px; border-radius: 15px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
-        .view-modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
-        .view-modal-header h2 { color: #333; font-size: 24px; }
-        .view-modal-header p { color: #666; font-size: 14px; margin-top: 5px; }
-        .view-modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: #999; transition: color 0.2s; }
-        .view-modal-close:hover { color: #333; }
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .page-header { flex-direction: column-reverse; }
+            .actions { width: 100%; }
+            .actions .btn { flex: 1; justify-content: center; }
+            .filter-card { flex-direction: column; align-items: stretch; }
+            .search-input { min-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>إدارة المرضى</h1>
-            <p>عرض وإدارة جميع المرضى وسجلاتهم الطبية</p>
+    <div class="page">
+
+        {{-- ===== Page Header ===== --}}
+        <div class="page-header">
+            <div class="actions">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    إضافة مريض جديد
+                </button>
+                <button class="btn btn-outline" onclick="exportPatients()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    تصدير
+                </button>
+            </div>
+            <div class="title-section">
+                <h1>إدارة المرضى</h1>
+                <p>إدارة معلومات المرضى وسجلاتهم الطبية</p>
+            </div>
         </div>
 
-        <div id="alertContainer"></div>
-
-        <div class="card">
-            <h2>البحث والفلاتر</h2>
-            <div class="filters">
-                <div class="filter-group">
-                    <label>بحث</label>
-                    <input type="text" id="searchInput" placeholder="ابحث بالاسم أو رقم الملف أو الهاتف..." onkeyup="debounceSearch()">
+        {{-- ===== Stats Cards ===== --}}
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <div class="filter-group">
-                    <label>العيادة</label>
-                    <select id="clinicFilter" onchange="loadPatients()">
-                        <option value="">جميع العيادات</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>الطبيب</label>
-                    <select id="doctorFilter" onchange="loadPatients()">
-                        <option value="">جميع الأطباء</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>الجنس</label>
-                    <select id="genderFilter" onchange="loadPatients()">
-                        <option value="">الكل</option>
-                        <option value="male">ذكر</option>
-                        <option value="female">أنثى</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>من تاريخ</label>
-                    <input type="date" id="dateFromFilter" onchange="loadPatients()">
-                </div>
-                <div class="filter-group">
-                    <label>إلى تاريخ</label>
-                    <input type="date" id="dateToFilter" onchange="loadPatients()">
+                <div class="stat-content">
+                    <span class="stat-number" id="statTotal">-</span>
+                    <span class="stat-label">إجمالي المرضى</span>
                 </div>
             </div>
-            <button class="btn btn-secondary" onclick="resetFilters()">إعادة تعيين الفلاتر</button>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-number" id="statActive">-</span>
+                    <span class="stat-label">مرضى نشطون</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-number" id="statToday">-</span>
+                    <span class="stat-label">مرضى اليوم</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-number" id="statVisits">-</span>
+                    <span class="stat-label">إجمالي الزيارات</span>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="btn-group">
-                <button class="btn btn-success" onclick="openAddModal()">+ إضافة مريض جديد</button>
+        {{-- ===== Filter Bar ===== --}}
+        <div class="filter-card">
+            <button class="filter-btn" onclick="openFilters()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                تصفية
+            </button>
+            <input type="text" id="searchByNumber" class="search-input" placeholder="البحث برقم المريض..." oninput="debounceSearch()">
+            <input type="text" id="searchAll" class="search-input large" placeholder="البحث في جميع بيانات المريض..." oninput="debounceSearch()">
+        </div>
+
+        {{-- ===== Table ===== --}}
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-num">#</th>
+                            <th><span class="sort-icon">↕</span>الاسم الكامل للمريض</th>
+                            <th><span class="sort-icon">↕</span>رقم المريض</th>
+                            <th><span class="sort-icon">↕</span>الجنس</th>
+                            <th><span class="sort-icon">↕</span>العمر</th>
+                            <th><span class="sort-icon">↕</span>رقم الهاتف</th>
+                            <th><span class="sort-icon">↕</span>حالة المريض</th>
+                            <th><span class="sort-icon">↕</span>تاريخ الإضافة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientsTable">
+                        <tr><td colspan="9" class="loading">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>رقم الملف</th>
-                        <th>الاسم</th>
-                        <th>العمر</th>
-                        <th>الجنس</th>
-                        <th>الهاتف</th>
-                        <th>آخر زيارة</th>
-                        <th>عدد الزيارات</th>
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="patientsTable">
-                    <tr><td colspan="8" class="loading">جاري التحميل...</td></tr>
-                </tbody>
-            </table>
-            <div class="pagination" id="pagination"></div>
+
+            <div class="pagination">
+                <div class="page-info" id="pageInfo">عرض 0 إلى 0 من 0 مريض</div>
+                <div class="page-controls">
+                    <span>عدد الصفوف لكل صفحة</span>
+                    <select class="page-size-select" id="pageSize" onchange="loadPatients(1)">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="page-nav">
+                    <span class="page-text" id="pageText">صفحة 1 من 1</span>
+                    <button class="page-btn" id="firstBtn" onclick="goToPage(1)" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+                    </button>
+                    <button class="page-btn" id="prevBtn" onclick="goToPage(currentPage - 1)" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <button class="page-btn" id="nextBtn" onclick="goToPage(currentPage + 1)" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <button class="page-btn" id="lastBtn" onclick="goToPage(lastPage)" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    {{-- ===== Add/Edit Modal (skeleton - integrate with your API) ===== --}}
     <div class="modal" id="patientModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">إضافة مريض جديد</h2>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
-            <form id="patientForm">
+            <form id="patientForm" onsubmit="savePatient(event)">
                 <input type="hidden" id="patientId">
                 <div class="form-grid">
                     <div class="form-group">
@@ -226,58 +542,19 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>مكان الإقامة</label>
-                        <input type="text" id="residence">
-                    </div>
-                    <div class="form-group">
                         <label>رقم الهاتف *</label>
                         <input type="tel" id="phone" required>
                     </div>
+                    <div class="form-group">
+                        <label>مكان الإقامة</label>
+                        <input type="text" id="residence">
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-success">حفظ</button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+                </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Patient Drawer -->
-    <div class="drawer" id="patientDrawer">
-        <div class="drawer-header">
-            <button class="drawer-close" onclick="closeDrawer()">×</button>
-            <h2 id="drawerTitle">تفاصيل المريض</h2>
-            <p id="drawerSubtitle">معلومات شاملة</p>
-        </div>
-        <div class="drawer-content" id="drawerContent">
-            <div class="loading">جاري التحميل...</div>
-        </div>
-    </div>
-
-    <!-- View Patient Modal -->
-    <div class="view-modal" id="viewPatientModal">
-        <div class="view-modal-content">
-            <div class="view-modal-header">
-                <div>
-                    <h2 id="viewModalTitle">تفاصيل المريض</h2>
-                    <p id="viewModalSubtitle"></p>
-                </div>
-                <button class="view-modal-close" onclick="closeViewModal()">×</button>
-            </div>
-            <div id="viewModalContent">
-                <div class="loading">جاري التحميل...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmation Dialog -->
-    <div class="confirm-dialog" id="confirmDialog">
-        <div class="confirm-content">
-            <div class="confirm-icon" id="confirmIcon">⚠️</div>
-            <h2 class="confirm-title" id="confirmTitle">تأكيد الحذف</h2>
-            <p class="confirm-message" id="confirmMessage">هل أنت متأكد من هذه العملية؟</p>
-            <div class="confirm-buttons">
-                <button class="btn-confirm-yes" id="confirmYesBtn">حذف</button>
-                <button class="btn-confirm-no" id="confirmNoBtn">إلغاء</button>
-            </div>
         </div>
     </div>
 
@@ -286,125 +563,103 @@
         if (!token) window.location.href = '/login';
 
         let currentPage = 1;
+        let lastPage = 1;
         let searchTimeout = null;
-        let clinics = [];
-        let doctors = [];
-
-        async function init() {
-            await loadClinics();
-            await loadDoctors();
-            await loadPatients();
-        }
-
-        async function loadClinics() {
-            try {
-                const res = await apiCall('/api/clinics');
-                const data = await res.json();
-                clinics = data.data || [];
-                
-                const select = document.getElementById('clinicFilter');
-                select.innerHTML = '<option value="">جميع العيادات</option>' + 
-                    clinics.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            } catch (error) {
-                console.error('Error loading clinics:', error);
-            }
-        }
-
-        async function loadDoctors() {
-            try {
-                const res = await apiCall('/api/users?role=doctor');
-                const data = await res.json();
-                doctors = data.data || [];
-                
-                const select = document.getElementById('doctorFilter');
-                select.innerHTML = '<option value="">جميع الأطباء</option>' + 
-                    doctors.map(d => `<option value="${d.id}">${d.full_name}</option>`).join('');
-            } catch (error) {
-                console.error('Error loading doctors:', error);
-            }
-        }
 
         async function loadPatients(page = 1) {
             currentPage = page;
-            
-            const search = document.getElementById('searchInput').value;
-            const clinicId = document.getElementById('clinicFilter').value;
-            const doctorId = document.getElementById('doctorFilter').value;
-            const gender = document.getElementById('genderFilter').value;
-            const dateFrom = document.getElementById('dateFromFilter').value;
-            const dateTo = document.getElementById('dateToFilter').value;
+            const searchAll = document.getElementById('searchAll').value;
+            const searchByNumber = document.getElementById('searchByNumber').value;
+            const perPage = document.getElementById('pageSize').value;
 
-            let url = `/api/patients?page=${page}&per_page=15`;
-            if (search) url += `&search=${encodeURIComponent(search)}`;
-            if (clinicId) url += `&clinic_id=${clinicId}`;
-            if (doctorId) url += `&doctor_id=${doctorId}`;
-            if (gender) url += `&gender=${gender}`;
-            if (dateFrom) url += `&date_from=${dateFrom}`;
-            if (dateTo) url += `&date_to=${dateTo}`;
+            let url = `/api/patients?page=${page}&per_page=${perPage}`;
+            if (searchAll) url += `&search=${encodeURIComponent(searchAll)}`;
+            if (searchByNumber) url += `&file_number=${encodeURIComponent(searchByNumber)}`;
 
             try {
                 const res = await apiCall(url);
                 const data = await res.json();
                 renderPatients(data);
             } catch (error) {
-                document.getElementById('patientsTable').innerHTML = '<tr><td colspan="8" class="loading">خطأ في التحميل</td></tr>';
+                document.getElementById('patientsTable').innerHTML =
+                    '<tr><td colspan="9" class="loading">خطأ في التحميل</td></tr>';
             }
         }
 
         function renderPatients(data) {
             const patients = data.data || [];
             const tbody = document.getElementById('patientsTable');
-            
+
             if (patients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="icon">👥</div><h3>لا توجد نتائج</h3><p>لم يتم العثور على مرضى مطابقين للبحث</p></td></tr>';
-                document.getElementById('pagination').innerHTML = '';
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div class="icon">👥</div><h3>لا توجد نتائج</h3></td></tr>';
+                updatePagination(0, 0, 0, 1);
                 return;
             }
 
-            tbody.innerHTML = patients.map(p => {
-                const lastVisit = p.visits && p.visits.length > 0 ? p.visits[0] : null;
-                const lastVisitDate = lastVisit ? new Date(lastVisit.visit_date).toLocaleDateString('ar-SA') : '-';
+            const startIndex = (data.current_page - 1) * data.per_page + 1;
+
+            tbody.innerHTML = patients.map((p, idx) => {
+                const initial = (p.full_name || '?').trim().charAt(0);
+                const createdAt = p.created_at
+                    ? new Date(p.created_at).toLocaleDateString('en-GB')
+                    : '-';
+                const isActive = p.is_active !== false;
+                const phone = p.phone && p.phone.trim() ? p.phone : null;
 
                 return `
-                    <tr data-patient-id="${p.id}" onclick="openPatientDrawer(${p.id})">
-                        <td><span class="badge badge-info">${p.file_number}</span></td>
-                        <td>${p.full_name}</td>
-                        <td>${p.age}</td>
-                        <td>${p.gender === 'male' ? 'ذكر' : 'أنثى'}</td>
-                        <td>${p.phone}</td>
-                        <td>${lastVisitDate}</td>
-                        <td><span class="badge badge-success">${p.visits_count || 0}</span></td>
+                    <tr data-patient-id="${p.id}">
+                        <td class="col-num">${startIndex + idx}</td>
                         <td>
-                            <button class="btn btn-sm btn-eye" title="عرض التفاصيل" onclick="event.stopPropagation(); openViewModal(${p.id})">👁️</button>
-                            <button class="btn btn-sm" onclick="event.stopPropagation(); openEditModal(${p.id})">تعديل</button>
-                            ${p.visits_count === 0 ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deletePatient(${p.id}, '${p.full_name}')">حذف</button>` : ''}
+                            <div class="patient-cell">
+                                <div class="avatar">${initial}</div>
+                                <span class="patient-name">${p.full_name}</span>
+                            </div>
+                        </td>
+                        <td>${p.file_number ? '#' + p.file_number : '-'}</td>
+                        <td><span class="badge ${p.gender === 'male' ? 'badge-male' : 'badge-female'}">${p.gender === 'male' ? 'ذكر' : 'أنثى'}</span></td>
+                        <td class="age-cell">${p.age}<span class="unit">سنة</span></td>
+                        <td class="phone-cell ${phone ? '' : 'empty'}">${phone || 'غير محدد'}</td>
+                        <td>
+                            <label class="toggle">
+                                <input type="checkbox" ${isActive ? 'checked' : ''} onchange="togglePatient(${p.id}, this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td class="date-cell">${createdAt}</td>
+                        <td class="actions-cell">
+                            <button class="action-btn action-delete" title="حذف" onclick="deletePatient(${p.id}, '${p.full_name.replace(/'/g, "\\'")}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                            </button>
+                            <button class="action-btn action-edit" title="تعديل" onclick="openEditModal(${p.id})">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="action-btn action-view" title="عرض" onclick="viewPatient(${p.id})">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button class="action-btn action-more" title="المزيد">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                            </button>
                         </td>
                     </tr>
                 `;
             }).join('');
 
-            renderPagination(data);
+            updatePagination(data.total, data.from, data.to, data.current_page, data.last_page);
         }
 
-        function renderPagination(data) {
-            const pagination = document.getElementById('pagination');
-            const { current_page, last_page } = data;
-            
-            let html = '';
-            
-            html += `<button ${current_page === 1 ? 'disabled' : ''} onclick="loadPatients(${current_page - 1})">السابق</button>`;
-            
-            for (let i = 1; i <= last_page; i++) {
-                if (i === 1 || i === last_page || (i >= current_page - 2 && i <= current_page + 2)) {
-                    html += `<button class="${i === current_page ? 'active' : ''}" onclick="loadPatients(${i})">${i}</button>`;
-                } else if (i === current_page - 3 || i === current_page + 3) {
-                    html += '<button disabled>...</button>';
-                }
-            }
-            
-            html += `<button ${current_page === last_page ? 'disabled' : ''} onclick="loadPatients(${current_page + 1})">التالي</button>`;
-            
-            pagination.innerHTML = html;
+        function updatePagination(total, from, to, page, totalPages) {
+            lastPage = totalPages || 1;
+            document.getElementById('pageInfo').textContent = `عرض ${from || 0} إلى ${to || 0} من ${total || 0} مريض`;
+            document.getElementById('pageText').textContent = `صفحة ${page} من ${lastPage}`;
+            document.getElementById('firstBtn').disabled = page <= 1;
+            document.getElementById('prevBtn').disabled = page <= 1;
+            document.getElementById('nextBtn').disabled = page >= lastPage;
+            document.getElementById('lastBtn').disabled = page >= lastPage;
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > lastPage) return;
+            loadPatients(page);
         }
 
         function debounceSearch() {
@@ -412,355 +667,84 @@
             searchTimeout = setTimeout(() => loadPatients(1), 300);
         }
 
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('clinicFilter').value = '';
-            document.getElementById('doctorFilter').value = '';
-            document.getElementById('genderFilter').value = '';
-            document.getElementById('dateFromFilter').value = '';
-            document.getElementById('dateToFilter').value = '';
-            loadPatients(1);
+        async function loadStats() {
+            try {
+                const res = await apiCall('/api/patients/stats');
+                const data = await res.json();
+                document.getElementById('statTotal').textContent = data.total_patients ?? '-';
+                document.getElementById('statActive').textContent = data.active_patients ?? '-';
+                document.getElementById('statToday').textContent = data.today_patients ?? '-';
+                document.getElementById('statVisits').textContent = data.total_visits ?? '-';
+            } catch (error) {
+                // stats silently fail
+            }
         }
 
-        async function openAddModal() {
+        function openAddModal() {
             document.getElementById('modalTitle').textContent = 'إضافة مريض جديد';
             document.getElementById('patientForm').reset();
             document.getElementById('patientId').value = '';
-            
-            try {
-                const res = await apiCall('/api/patients/next-file-number');
-                const data = await res.json();
-                document.getElementById('fileNumber').value = data.file_number;
-            } catch (error) {
-                showAlert('خطأ في توليد رقم الملف', 'error');
-            }
-            
             document.getElementById('patientModal').classList.add('open');
         }
 
-        async function openEditModal(patientId) {
-            try {
-                const res = await apiCall(`/api/patients/${patientId}`);
-                const data = await res.json();
-                const patient = data.patient;
-                
-                document.getElementById('modalTitle').textContent = 'تعديل بيانات المريض';
-                document.getElementById('patientId').value = patient.id;
-                document.getElementById('fileNumber').value = patient.file_number;
-                document.getElementById('fullName').value = patient.full_name;
-                document.getElementById('age').value = patient.age;
-                document.getElementById('gender').value = patient.gender;
-                document.getElementById('residence').value = patient.residence || '';
-                document.getElementById('phone').value = patient.phone;
-                
-                document.getElementById('patientModal').classList.add('open');
-            } catch (error) {
-                showAlert('خطأ في تحميل بيانات المريض', 'error');
-            }
+        function openEditModal(id) {
+            // TODO: fetch patient data and populate form
+            document.getElementById('modalTitle').textContent = 'تعديل بيانات المريض';
+            document.getElementById('patientId').value = id;
+            document.getElementById('patientModal').classList.add('open');
         }
 
         function closeModal() {
             document.getElementById('patientModal').classList.remove('open');
         }
 
-        document.getElementById('patientForm').addEventListener('submit', async (e) => {
+        function viewPatient(id) {
+            // TODO: navigate to patient details or open drawer
+            window.location.href = `/patients/${id}`;
+        }
+
+        function togglePatient(id, active) {
+            // TODO: PATCH /api/patients/{id} with is_active
+        }
+
+        function deletePatient(id, name) {
+            if (!confirm(`هل أنت متأكد من حذف "${name}"؟`)) return;
+            // TODO: DELETE /api/patients/{id}
+            loadPatients(currentPage);
+        }
+
+        function exportPatients() {
+            // TODO: GET /api/patients/export and download as CSV/Excel
+        }
+
+        function openFilters() {
+            // TODO: open advanced filters drawer/modal
+        }
+
+        async function savePatient(e) {
             e.preventDefault();
-            
-            const patientId = document.getElementById('patientId').value;
-            const data = {
-                full_name: document.getElementById('fullName').value,
-                age: parseInt(document.getElementById('age').value),
-                gender: document.getElementById('gender').value,
-                residence: document.getElementById('residence').value || null,
-                phone: document.getElementById('phone').value
-            };
-
-            try {
-                const url = patientId ? `/api/patients/${patientId}` : '/api/patients';
-                const method = patientId ? 'PUT' : 'POST';
-                
-                const res = await apiCall(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (res.ok) {
-                    showAlert(patientId ? 'تم تحديث المريض بنجاح' : 'تم إضافة المريض بنجاح', 'success');
-                    closeModal();
-                    loadPatients(currentPage);
-                } else {
-                    const error = await res.json();
-                    showAlert(error.message || 'خطأ في الحفظ', 'error');
-                }
-            } catch (error) {
-                showAlert('خطأ في الاتصال', 'error');
-            }
-        });
-
-        async function deletePatient(patientId, patientName) {
-            const confirmed = await showConfirm(
-                'حذف المريض',
-                `هل أنت متأكد من حذف المريض "${patientName}"؟`,
-                '🗑️'
-            );
-
-            if (!confirmed) return;
-
-            try {
-                const res = await apiCall(`/api/patients/${patientId}`, { method: 'DELETE' });
-
-                if (res.ok) {
-                    showAlert('تم حذف المريض بنجاح ✓', 'success');
-                    const row = document.querySelector(`tr[data-patient-id="${patientId}"]`);
-                    if (row) {
-                        row.style.opacity = '0.5';
-                        setTimeout(() => row.remove(), 300);
-                    } else {
-                        loadPatients(currentPage);
-                    }
-                } else {
-                    const error = await res.json();
-                    showAlert(error.message || 'خطأ في حذف المريض', 'error');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                showAlert('خطأ في الحذف - تحقق من الاتصال', 'error');
-            }
-        }
-
-        async function openPatientDrawer(patientId) {
-            document.getElementById('patientDrawer').classList.add('open');
-            document.getElementById('drawerContent').innerHTML = '<div class="loading">جاري التحميل...</div>';
-
-            try {
-                const res = await apiCall(`/api/patients/${patientId}`);
-                const data = await res.json();
-                renderPatientDetails(data);
-            } catch (error) {
-                document.getElementById('drawerContent').innerHTML = '<div class="loading">خطأ في التحميل</div>';
-            }
-        }
-
-        function renderPatientDetails(data) {
-            const patient = data.patient;
-            const visits = data.visits || [];
-
-            document.getElementById('drawerTitle').textContent = patient.full_name;
-            document.getElementById('drawerSubtitle').textContent = `رقم الملف: ${patient.file_number}`;
-
-            let html = `
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="label">العمر</div>
-                        <div class="value">${patient.age} سنة</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">الجنس</div>
-                        <div class="value">${patient.gender === 'male' ? 'ذكر' : 'أنثى'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">الهاتف</div>
-                        <div class="value">${patient.phone}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">الإقامة</div>
-                        <div class="value">${patient.residence || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">إجمالي الزيارات</div>
-                        <div class="value">${data.total_visits}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">إجمالي المصروف</div>
-                        <div class="value">${data.total_spent} ر.س</div>
-                    </div>
-                </div>
-                <h3 style="margin-bottom: 15px; color: #333;">سجل الزيارات</h3>
-            `;
-
-            if (visits.length === 0) {
-                html += '<div class="empty-state"><div class="icon">📋</div><h3>لا توجد زيارات</h3><p>لم يقم المريض بأي زيارة بعد</p></div>';
-            } else {
-                html += visits.map(v => `
-                    <div class="visit-card">
-                        <h4>${v.visit_type === 'examination' ? 'معاينة' : 'مراجعة'} - ${new Date(v.visit_date).toLocaleDateString('ar-SA')}</h4>
-                        <p><strong>الطبيب:</strong> ${v.doctor.full_name}</p>
-                        <p><strong>العيادة:</strong> ${v.clinic.name}</p>
-                        <p><strong>إجمالي الرسوم:</strong> ${v.totals.total_fees} ر.س</p>
-                        <p><strong>حصة الطبيب:</strong> ${v.totals.doctor_share} ر.س</p>
-                        <p><strong>حصة المجمع:</strong> ${v.totals.center_share} ر.س</p>
-                        ${v.is_free_review ? '<p><span class="badge badge-warning">مراجعة مجانية</span></p>' : ''}
-                        ${v.procedures.length > 0 ? `
-                            <p style="margin-top: 10px;"><strong>العمليات:</strong></p>
-                            <ul style="margin-right: 20px; margin-top: 5px;">
-                                ${v.procedures.map(p => `<li>${p.name} - مجمع: ${p.center_fee} ر.س، طبيب: ${p.doctor_fee} ر.س</li>`).join('')}
-                            </ul>
-                        ` : ''}
-                        ${v.notes ? `<p style="margin-top: 10px;"><strong>ملاحظات:</strong> ${v.notes}</p>` : ''}
-                    </div>
-                `).join('');
-            }
-
-            document.getElementById('drawerContent').innerHTML = html;
-        }
-
-        function closeDrawer() {
-            document.getElementById('patientDrawer').classList.remove('open');
-        }
-
-        async function openViewModal(patientId) {
-            document.getElementById('viewPatientModal').classList.add('open');
-            document.getElementById('viewModalContent').innerHTML = '<div class="loading">جاري التحميل...</div>';
-
-            try {
-                const res = await apiCall(`/api/patients/${patientId}`);
-                const data = await res.json();
-                renderViewModalContent(data);
-            } catch (error) {
-                document.getElementById('viewModalContent').innerHTML = '<div class="loading">خطأ في التحميل</div>';
-            }
-        }
-
-        function renderViewModalContent(data) {
-            const patient = data.patient;
-            const visits = data.visits || [];
-
-            document.getElementById('viewModalTitle').textContent = patient.full_name;
-            document.getElementById('viewModalSubtitle').textContent = `رقم الملف: ${patient.file_number}`;
-
-            let html = `
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="label">العمر</div>
-                        <div class="value">${patient.age} سنة</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">الجنس</div>
-                        <div class="value">${patient.gender === 'male' ? 'ذكر' : 'أنثى'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">الهاتف</div>
-                        <div class="value">${patient.phone}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">الإقامة</div>
-                        <div class="value">${patient.residence || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">إجمالي الزيارات</div>
-                        <div class="value">${data.total_visits}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">إجمالي المصروف</div>
-                        <div class="value">${data.total_spent} ر.س</div>
-                    </div>
-                </div>
-                <h3 style="margin-bottom: 15px; color: #333;">سجل الزيارات</h3>
-            `;
-
-            if (visits.length === 0) {
-                html += '<div class="empty-state"><div class="icon">📋</div><h3>لا توجد زيارات</h3><p>لم يقم المريض بأي زيارة بعد</p></div>';
-            } else {
-                html += visits.map(v => `
-                    <div class="visit-card">
-                        <h4>${v.visit_type === 'examination' ? 'معاينة' : 'مراجعة'} - ${new Date(v.visit_date).toLocaleDateString('ar-SA')}</h4>
-                        <p><strong>الطبيب:</strong> ${v.doctor.full_name}</p>
-                        <p><strong>العيادة:</strong> ${v.clinic.name}</p>
-                        <p><strong>إجمالي الرسوم:</strong> ${v.totals.total_fees} ر.س</p>
-                        <p><strong>حصة الطبيب:</strong> ${v.totals.doctor_share} ر.س</p>
-                        <p><strong>حصة المجمع:</strong> ${v.totals.center_share} ر.س</p>
-                        ${v.is_free_review ? '<p><span class="badge badge-warning">مراجعة مجانية</span></p>' : ''}
-                        ${v.procedures.length > 0 ? `
-                            <p style="margin-top: 10px;"><strong>العمليات:</strong></p>
-                            <ul style="margin-right: 20px; margin-top: 5px;">
-                                ${v.procedures.map(p => `<li>${p.name} - مجمع: ${p.center_fee} ر.س، طبيب: ${p.doctor_fee} ر.س</li>`).join('')}
-                            </ul>
-                        ` : ''}
-                        ${v.notes ? `<p style="margin-top: 10px;"><strong>ملاحظات:</strong> ${v.notes}</p>` : ''}
-                    </div>
-                `).join('');
-            }
-
-            document.getElementById('viewModalContent').innerHTML = html;
-        }
-
-        function closeViewModal() {
-            document.getElementById('viewPatientModal').classList.remove('open');
+            // TODO: integrate POST/PUT /api/patients
         }
 
         async function apiCall(url, options = {}) {
-            const defaultOptions = {
+            const mergedOptions = {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
+                    'Accept': 'application/json',
+                    ...(options.headers || {})
+                },
+                ...options
             };
-
-            const mergedOptions = { ...defaultOptions, ...options };
-            if (options.headers) {
-                mergedOptions.headers = { ...defaultOptions.headers, ...options.headers };
-            }
-
             const response = await fetch(url, mergedOptions);
-            
             if (response.status === 401) {
                 localStorage.removeItem('token');
-                localStorage.removeItem('user');
                 window.location.href = '/login';
-                throw new Error('Unauthorized');
             }
-
             return response;
         }
 
-        function showAlert(message, type) {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            container.appendChild(alert);
-            setTimeout(() => alert.remove(), 5000);
-        }
-
-        function showConfirm(title, message, icon = '⚠️') {
-            return new Promise((resolve) => {
-                const dialog = document.getElementById('confirmDialog');
-                if (!dialog) {
-                    resolve(confirm(message));
-                    return;
-                }
-
-                document.getElementById('confirmTitle').textContent = title;
-                document.getElementById('confirmMessage').textContent = message;
-                document.getElementById('confirmIcon').textContent = icon;
-
-                const yesBtn = document.getElementById('confirmYesBtn');
-                const noBtn = document.getElementById('confirmNoBtn');
-
-                const cleanup = () => {
-                    dialog.classList.remove('open');
-                    yesBtn.removeEventListener('click', handleYes);
-                    noBtn.removeEventListener('click', handleNo);
-                };
-
-                const handleYes = () => {
-                    cleanup();
-                    resolve(true);
-                };
-
-                const handleNo = () => {
-                    cleanup();
-                    resolve(false);
-                };
-
-                yesBtn.addEventListener('click', handleYes);
-                noBtn.addEventListener('click', handleNo);
-                dialog.classList.add('open');
-            });
-        }
-
-        init();
+        loadPatients();
+        loadStats();
     </script>
 </body>
 </html>

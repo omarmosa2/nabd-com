@@ -54,9 +54,7 @@
         <div class="charts-grid">
             <div class="chart-card">
                 <h3>الزيارات خلال 6 أشهر</h3>
-                <div class="chart-container">
-                    <canvas id="visitsChart"></canvas>
-                </div>
+                
             </div>
             <div class="chart-card">
                 <h3>الإيرادات الشهرية</h3>

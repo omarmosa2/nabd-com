@@ -199,7 +199,6 @@
                     <div class="stats-grid" id="dashboardStats"></div>
                     <div class="card">
                         <h2>الزيارات خلال 6 أشهر</h2>
-                        <canvas id="visitsChart" height="100"></canvas>
                     </div>
                 </div>
 
