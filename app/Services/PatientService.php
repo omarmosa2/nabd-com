@@ -87,9 +87,35 @@ class PatientService
             ];
         });
 
+        $upcomingAppointments = $patient->appointments()
+            ->with(['doctor', 'clinic'])
+            ->where('appointment_date', '>=', now())
+            ->whereIn('status', ['scheduled', 'completed'])
+            ->orderBy('appointment_date')
+            ->limit(5)
+            ->get()
+            ->map(fn ($apt) => [
+                'id' => $apt->id,
+                'appointment_date' => $apt->appointment_date->toDateTimeString(),
+                'duration_minutes' => $apt->duration_minutes,
+                'status' => $apt->status->value,
+                'status_label' => $apt->status->label(),
+                'doctor' => [
+                    'id' => $apt->doctor->id,
+                    'full_name' => $apt->doctor->full_name,
+                ],
+                'clinic' => [
+                    'id' => $apt->clinic->id,
+                    'name' => $apt->clinic->name,
+                ],
+                'notes' => $apt->notes,
+            ])
+            ->toArray();
+
         return [
             'patient' => $patient,
             'visits' => $visits,
+            'upcoming_appointments' => $upcomingAppointments,
             'total_visits' => $patient->visits->count(),
             'total_spent' => $visits->sum('totals.total_fees'),
         ];

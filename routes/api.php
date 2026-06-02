@@ -4,6 +4,8 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\DoctorDeductionController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ReceptionController;
@@ -24,8 +26,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/stats', [DashboardController::class, 'stats']);
         Route::get('/revenue', [DashboardController::class, 'revenue']);
         Route::get('/appointments', [DashboardController::class, 'appointments']);
+        Route::get('/today-schedule', [DashboardController::class, 'todaySchedule']);
         Route::get('/top-doctors', [DashboardController::class, 'topDoctors']);
         Route::get('/top-clinics', [DashboardController::class, 'topClinics']);
+        Route::get('/clinics', [DashboardController::class, 'clinics']);
+        Route::get('/doctors', [DashboardController::class, 'doctors']);
         Route::get('/charts', [DashboardController::class, 'charts']);
     });
 
@@ -39,8 +44,36 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Clinics
-    Route::get('/clinics', [ClinicController::class, 'index']);
-    Route::get('/clinics/{clinic}', [ClinicController::class, 'show']);
+    Route::prefix('clinics')->group(function () {
+        Route::get('/statuses', [ClinicController::class, 'statuses']);
+        Route::get('/active', [ClinicController::class, 'listActive']);
+    });
+    Route::apiResource('clinics', ClinicController::class);
+    Route::post('clinics/{clinic}/archive', [ClinicController::class, 'archive']);
+    Route::post('clinics/{clinic}/activate', [ClinicController::class, 'activate']);
+    Route::post('clinics/{clinic}/deactivate', [ClinicController::class, 'deactivate']);
+    Route::get('clinics/{clinic}/statistics', [ClinicController::class, 'statistics']);
+    Route::get('clinics/{clinic}/detailed-report', [ClinicController::class, 'detailedReport']);
+    Route::get('clinics/{clinic}/doctors', [ClinicController::class, 'doctors']);
+    Route::post('clinics/{clinic}/assign-doctor', [ClinicController::class, 'assignDoctor']);
+    Route::delete('clinics/{clinic}/doctors/{doctor}', [ClinicController::class, 'unassignDoctor']);
+
+    // Doctors
+    Route::prefix('doctors')->group(function () {
+        Route::get('/active', [DoctorController::class, 'listActive']);
+        Route::get('/specializations', [DoctorController::class, 'specializations']);
+        Route::get('/{doctor}/statistics', [DoctorController::class, 'statistics']);
+        Route::get('/{doctor}/finance', [DoctorController::class, 'finance']);
+        Route::get('/{doctor}/schedule', [DoctorController::class, 'schedule']);
+        Route::get('/{doctor}/patients', [DoctorController::class, 'patients']);
+        Route::post('/{doctor}/archive', [DoctorController::class, 'archive']);
+        Route::post('/{doctor}/activate', [DoctorController::class, 'activate']);
+        Route::post('/{doctor}/deactivate', [DoctorController::class, 'deactivate']);
+        Route::get('/{doctor}/deductions', [DoctorDeductionController::class, 'index']);
+        Route::post('/{doctor}/deductions', [DoctorDeductionController::class, 'store']);
+        Route::delete('/{doctor}/deductions/{deduction}', [DoctorDeductionController::class, 'destroy']);
+    });
+    Route::apiResource('doctors', DoctorController::class);
 
     // Users
     Route::get('/users', [UserController::class, 'index']);
@@ -55,7 +88,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('visits', VisitController::class);
 
     // Appointments
+    Route::prefix('appointments')->group(function () {
+        Route::get('statuses', [AppointmentController::class, 'statuses']);
+        Route::get('calendar', [AppointmentController::class, 'calendar']);
+        Route::get('check-availability', [AppointmentController::class, 'checkAvailability']);
+    });
     Route::apiResource('appointments', AppointmentController::class);
+    Route::post('appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
+    Route::post('appointments/{appointment}/mark-completed', [AppointmentController::class, 'markCompleted']);
+    Route::post('appointments/{appointment}/mark-missed', [AppointmentController::class, 'markMissed']);
+    Route::post('appointments/{appointment}/convert-to-visit', [AppointmentController::class, 'convertToVisit']);
 
     // Finance
     Route::prefix('finance')->middleware('role:admin')->group(function () {

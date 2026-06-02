@@ -2,41 +2,42 @@
 
 namespace App\Events;
 
-use App\Models\Appointment;
+use App\Enums\ClinicStatus;
+use App\Models\Clinic;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentCreated implements ShouldBroadcast
+class ClinicStatusChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public Appointment $appointment,
+        public Clinic $clinic,
+        public ClinicStatus $previousStatus,
         public ?\App\Models\User $actor = null,
     ) {}
 
     public function broadcastOn(): array
     {
-        return [new Channel('appointments')];
+        return [new Channel('clinics')];
     }
 
     public function broadcastAs(): string
     {
-        return 'appointment.created';
+        return 'clinic.status_changed';
     }
 
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->appointment->id,
-            'patient_name' => $this->appointment->patient?->full_name,
-            'doctor_name' => $this->appointment->doctor?->full_name,
-            'clinic_name' => $this->appointment->clinic?->name,
-            'appointment_date' => $this->appointment->appointment_date?->toDateTimeString(),
-            'status' => $this->appointment->status?->value,
+            'id' => $this->clinic->id,
+            'name' => $this->clinic->name,
+            'previous_status' => $this->previousStatus->value,
+            'status' => $this->clinic->status->value,
+            'status_label' => $this->clinic->status->label(),
             'actor_id' => $this->actor?->id,
         ];
     }

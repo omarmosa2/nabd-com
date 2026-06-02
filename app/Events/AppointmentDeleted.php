@@ -2,19 +2,21 @@
 
 namespace App\Events;
 
-use App\Models\Appointment;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentCreated implements ShouldBroadcast
+class AppointmentDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    /**
+     * @param  array<string, mixed>  $snapshot
+     */
     public function __construct(
-        public Appointment $appointment,
+        public array $snapshot,
         public ?\App\Models\User $actor = null,
     ) {}
 
@@ -25,18 +27,13 @@ class AppointmentCreated implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'appointment.created';
+        return 'appointment.deleted';
     }
 
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->appointment->id,
-            'patient_name' => $this->appointment->patient?->full_name,
-            'doctor_name' => $this->appointment->doctor?->full_name,
-            'clinic_name' => $this->appointment->clinic?->name,
-            'appointment_date' => $this->appointment->appointment_date?->toDateTimeString(),
-            'status' => $this->appointment->status?->value,
+            'id' => $this->snapshot['id'] ?? null,
             'actor_id' => $this->actor?->id,
         ];
     }

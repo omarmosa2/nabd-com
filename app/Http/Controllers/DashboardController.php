@@ -31,11 +31,28 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function todaySchedule(): JsonResponse
+    {
+        return response()->json([
+            'schedule' => $this->dashboardService->getTodayScheduleByDoctor(),
+        ]);
+    }
+
+    public function clinics(): JsonResponse
+    {
+        return response()->json($this->dashboardService->getClinicStatsSummary());
+    }
+
     public function topDoctors(): JsonResponse
     {
         return response()->json([
             'doctors' => $this->dashboardService->getTopDoctors()
         ]);
+    }
+
+    public function doctors(): JsonResponse
+    {
+        return response()->json($this->dashboardService->getDoctorStatsSummary());
     }
 
     public function topClinics(): JsonResponse

@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentCreated implements ShouldBroadcast
+class AppointmentUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -25,16 +25,13 @@ class AppointmentCreated implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'appointment.created';
+        return 'appointment.updated';
     }
 
     public function broadcastWith(): array
     {
         return [
             'id' => $this->appointment->id,
-            'patient_name' => $this->appointment->patient?->full_name,
-            'doctor_name' => $this->appointment->doctor?->full_name,
-            'clinic_name' => $this->appointment->clinic?->name,
             'appointment_date' => $this->appointment->appointment_date?->toDateTimeString(),
             'status' => $this->appointment->status?->value,
             'actor_id' => $this->actor?->id,

@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -9,12 +10,13 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentCreated implements ShouldBroadcast
+class AppointmentStatusChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
         public Appointment $appointment,
+        public AppointmentStatus $previousStatus,
         public ?\App\Models\User $actor = null,
     ) {}
 
@@ -25,18 +27,16 @@ class AppointmentCreated implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'appointment.created';
+        return 'appointment.status_changed';
     }
 
     public function broadcastWith(): array
     {
         return [
             'id' => $this->appointment->id,
-            'patient_name' => $this->appointment->patient?->full_name,
-            'doctor_name' => $this->appointment->doctor?->full_name,
-            'clinic_name' => $this->appointment->clinic?->name,
-            'appointment_date' => $this->appointment->appointment_date?->toDateTimeString(),
-            'status' => $this->appointment->status?->value,
+            'previous_status' => $this->previousStatus->value,
+            'status' => $this->appointment->status->value,
+            'status_label' => $this->appointment->status->label(),
             'actor_id' => $this->actor?->id,
         ];
     }

@@ -30,4 +30,33 @@ class StoreVisitRequest extends FormRequest
             'procedures.*.doctor_fee' => ['required_with:procedures', 'numeric', 'min:0'],
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($v) {
+            $clinicId = $this->input('clinic_id');
+            if ($clinicId) {
+                $clinic = \App\Models\Clinic::find($clinicId);
+                if (!$clinic) {
+                    $v->errors()->add('clinic_id', 'العيادة غير موجودة.');
+                } elseif (!$clinic->acceptsVisits()) {
+                    $v->errors()->add('clinic_id', 'العيادة غير نشطة ولا تستقبل زيارات جديدة.');
+                }
+            }
+
+            $doctorId = $this->input('doctor_id');
+            if ($doctorId) {
+                $doctor = \App\Models\User::find($doctorId);
+                if (!$doctor) {
+                    $v->errors()->add('doctor_id', 'الطبيب غير موجود.');
+                } elseif (!$doctor->isDoctor()) {
+                    $v->errors()->add('doctor_id', 'المستخدم المحدد ليس طبيباً.');
+                } elseif ($doctor->isArchived()) {
+                    $v->errors()->add('doctor_id', 'الطبيب مؤرشف ولا يستقبل زيارات جديدة.');
+                } elseif (!$doctor->is_active) {
+                    $v->errors()->add('doctor_id', 'الطبيب غير مفعّل ولا يستقبل زيارات جديدة.');
+                }
+            }
+        });
+    }
 }

@@ -2,48 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\AppointmentCreated;
+use App\Enums\AppointmentStatus;
+use App\Exceptions\AppointmentConflictException;
+use App\Http\Requests\CheckAvailabilityRequest;
+use App\Http\Requests\ConvertAppointmentToVisitRequest;
 use App\Http\Requests\StoreAppointmentRequest;
+use App\Http\Requests\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Services\AppointmentService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AppointmentController extends Controller
 {
+    public function __construct(protected AppointmentService $service) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Appointment::with(['patient', 'doctor', 'clinic']);
-
-        if ($request->user()->isDoctor()) {
-            $query->where('doctor_id', $request->user()->id);
-        }
-
-        if ($request->has('doctor_id')) {
-            $query->where('doctor_id', $request->doctor_id);
-        }
-
-        if ($request->has('date')) {
-            $query->whereDate('appointment_date', $request->date);
-        }
-
-        $appointments = $query->orderBy('appointment_date')->paginate($request->get('per_page', 15));
+        $appointments = $this->service->paginate(
+            filters: $request->only([
+                'doctor_id', 'clinic_id', 'status', 'date',
+                'date_from', 'date_to', 'search',
+            ]),
+            perPage: (int) $request->input('per_page', 25),
+            viewer: $request->user(),
+        );
 
         return AppointmentResource::collection($appointments);
     }
 
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
-        $appointment = Appointment::create($request->validated());
-        $appointment->load(['patient', 'doctor', 'clinic']);
-
-        AppointmentCreated::dispatch(
-            $appointment->id,
-            $appointment->patient->full_name,
-            $appointment->doctor->full_name,
-            $appointment->appointment_date->toDateTimeString(),
-        );
+        try {
+            $appointment = $this->service->createAppointment(
+                $request->validated(),
+                $request->user(),
+            );
+        } catch (AppointmentConflictException $e) {
+            throw $e;
+        }
 
         return (new AppointmentResource($appointment))
             ->response()
@@ -52,31 +52,130 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment): AppointmentResource
     {
-        $appointment->load(['patient', 'doctor', 'clinic']);
-
+        $this->authorizeView($appointment);
+        $appointment->load(['patient', 'doctor', 'clinic', 'visit']);
         return new AppointmentResource($appointment);
     }
 
-    public function destroy(Appointment $appointment): JsonResponse
+    public function update(UpdateAppointmentRequest $request, Appointment $appointment): AppointmentResource
     {
-        $appointment->delete();
-
-        return response()->json(['message' => 'Appointment deleted successfully']);
+        $updated = $this->service->updateAppointment(
+            $appointment,
+            $request->validated(),
+            $request->user(),
+        );
+        return new AppointmentResource($updated);
     }
 
-    public function update(Request $request, Appointment $appointment): AppointmentResource
+    public function destroy(Appointment $appointment, Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'patient_id' => 'sometimes|exists:patients,id',
-            'doctor_id' => 'sometimes|exists:users,id',
-            'clinic_id' => 'sometimes|exists:clinics,id',
-            'appointment_date' => 'sometimes|date|after:now',
-            'notes' => 'nullable|string',
+        if (!$request->user()->isAdmin() && !$request->user()->isReception()) {
+            return response()->json(['message' => 'غير مصرح لك بحذف موعد.'], 403);
+        }
+        $this->service->deleteAppointment($appointment, $request->user());
+        return response()->json(['message' => 'تم حذف الموعد بنجاح.']);
+    }
+
+    public function calendar(Request $request): JsonResponse
+    {
+        $year = (int) $request->input('year', now()->year);
+        $month = (int) $request->input('month', now()->month);
+        $days = $this->service->calendar(
+            year: $year,
+            month: $month,
+            filters: $request->only(['doctor_id', 'clinic_id']),
+            viewer: $request->user(),
+        );
+
+        return response()->json([
+            'year' => $year,
+            'month' => $month,
+            'days' => $days,
+        ]);
+    }
+
+    public function checkAvailability(CheckAvailabilityRequest $request): JsonResponse
+    {
+        $result = $this->service->checkAvailability(
+            doctorId: (int) $request->input('doctor_id'),
+            date: Carbon::parse($request->input('appointment_date')),
+            duration: $request->duration(),
+            ignoreId: $request->filled('ignore_id') ? (int) $request->input('ignore_id') : null,
+        );
+        return response()->json($result);
+    }
+
+    public function cancel(Request $request, Appointment $appointment): AppointmentResource
+    {
+        if (!$request->user()->isAdmin() && !$request->user()->isReception()) {
+            return abort(403, 'غير مصرح لك بإلغاء المواعيد.');
+        }
+        $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $appointment->update($data);
-        $appointment->load(['patient', 'doctor', 'clinic']);
+        $updated = $this->service->cancelAppointment(
+            $appointment,
+            $request->input('reason'),
+            $request->user(),
+        );
+        return new AppointmentResource($updated);
+    }
 
-        return new AppointmentResource($appointment);
+    public function markCompleted(Appointment $appointment, Request $request): AppointmentResource
+    {
+        if (!$request->user()->isAdmin() && !$request->user()->isReception()) {
+            return abort(403, 'غير مصرح لك.');
+        }
+        $updated = $this->service->markCompleted($appointment, $request->user());
+        return new AppointmentResource($updated);
+    }
+
+    public function markMissed(Appointment $appointment, Request $request): AppointmentResource
+    {
+        if (!$request->user()->isAdmin() && !$request->user()->isReception()) {
+            return abort(403, 'غير مصرح لك.');
+        }
+        $updated = $this->service->markMissed($appointment, $request->user());
+        return new AppointmentResource($updated);
+    }
+
+    public function convertToVisit(
+        ConvertAppointmentToVisitRequest $request,
+        Appointment $appointment,
+    ): JsonResponse {
+        $visit = $this->service->convertToVisit(
+            $appointment,
+            $request->validated(),
+            $request->user(),
+        );
+
+        $appointment->refresh()->load(['patient', 'doctor', 'clinic', 'visit']);
+
+        return response()->json([
+            'message' => 'تم تحويل الموعد إلى زيارة بنجاح.',
+            'appointment' => new AppointmentResource($appointment),
+            'visit' => $visit->load('procedures'),
+        ], 201);
+    }
+
+    public function statuses(): JsonResponse
+    {
+        return response()->json([
+            'data' => collect(AppointmentStatus::cases())->map(fn (AppointmentStatus $s) => [
+                'value' => $s->value,
+                'label' => $s->label(),
+                'color' => $s->color(),
+                'is_terminal' => $s->isTerminal(),
+            ])->values(),
+        ]);
+    }
+
+    protected function authorizeView(Appointment $appointment): void
+    {
+        $user = request()->user();
+        if ($user->isDoctor() && $appointment->doctor_id !== $user->id) {
+            abort(403, 'لا يمكنك عرض مواعيد طبيب آخر.');
+        }
     }
 }
