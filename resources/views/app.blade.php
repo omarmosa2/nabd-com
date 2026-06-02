@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مجمع نبض الطبي</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
@@ -148,6 +151,520 @@
         .btn-confirm-yes:hover { background: #c82333; transform: translateY(-2px); }
         .btn-confirm-no { background: #6c757d; color: white; }
         .btn-confirm-no:hover { background: #5a6268; transform: translateY(-2px); }
+
+        /* Medical UI refresh */
+        :root {
+            --page-bg: #F5F7FA;
+            --sidebar-bg: #1E2A5E;
+            --sidebar-bg-soft: #27376f;
+            --primary: #2563eb;
+            --primary-soft: #EFF6FF;
+            --success: #0f9f6e;
+            --success-dark: #0b7f59;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --line: #e5e7eb;
+            --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        body {
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+            background: var(--page-bg);
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        #loginPage {
+            background: var(--page-bg);
+        }
+
+        .login-container {
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .login-container h1,
+        .topbar h1,
+        .card h2,
+        .modal-header h2,
+        .drawer-header h2 {
+            letter-spacing: 0;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            background: var(--sidebar-bg);
+            box-shadow: -8px 0 30px rgba(30, 42, 94, 0.16);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 26px 22px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.12);
+            color: #ffffff;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            line-height: 1.3;
+        }
+
+        .sidebar-header p {
+            color: rgba(255,255,255,0.72);
+            opacity: 1;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 18px 12px;
+        }
+
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+
+        .sidebar-menu a {
+            min-height: 44px;
+            border-radius: 8px;
+            border-right: 0;
+            color: rgba(255,255,255,0.82);
+            font-weight: 600;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255,255,255,0.12);
+            color: #ffffff;
+            border-right-color: transparent;
+        }
+
+        .sidebar-footer {
+            padding: 16px 14px 22px;
+            border-top: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .btn-logout {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: inherit;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .main-content {
+            background: var(--page-bg);
+        }
+
+        .topbar {
+            padding: 18px 34px;
+            border-bottom: 1px solid var(--line);
+            box-shadow: none;
+        }
+
+        .topbar h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .user-info {
+            gap: 12px;
+        }
+
+        .navbar-icon {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .user-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-meta strong {
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .user-meta small {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .page-content {
+            padding: 28px 34px;
+        }
+
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            color: var(--text-main);
+            border-bottom-color: var(--primary-soft);
+        }
+
+        .btn {
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: none;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: var(--success-dark);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid var(--line);
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            box-shadow: none;
+        }
+
+        .patients-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .patients-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .patients-search {
+            min-width: 280px;
+            flex: 1;
+            max-width: 460px;
+        }
+
+        .patients-search input {
+            width: 100%;
+            min-height: 42px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .patients-search input:focus,
+        .filter-group input:focus,
+        .filter-group select:focus,
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus,
+        .form-group-inline input:focus,
+        .form-group-inline select:focus,
+        .form-group-inline textarea:focus {
+            outline: none;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .filters.compact-filters {
+            display: none;
+            padding: 16px;
+            margin: 0 0 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+
+        .filters.compact-filters.open {
+            display: flex;
+        }
+
+        .patients-table-card {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .patients-table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            min-width: 860px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--line);
+        }
+
+        td {
+            font-size: 14px;
+            color: #1f2937;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        tbody tr {
+            cursor: default;
+        }
+
+        tr:hover {
+            background: #f8fbff;
+        }
+
+        .serial-cell {
+            color: var(--text-muted);
+            font-weight: 700;
+            width: 58px;
+        }
+
+        .patient-number {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: var(--primary-soft);
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .status-badge,
+        .gender-badge,
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 26px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .gender-male {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .gender-female {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-new {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .row-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            min-height: 34px;
+            padding: 0;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #ffffff;
+            color: #374151;
+            font-size: 15px;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-soft);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
+        .icon-btn.danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .pagination {
+            padding: 18px;
+            border-top: 1px solid var(--line);
+            margin-top: 0;
+        }
+
+        .pagination button {
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .pagination button.active {
+            background: var(--primary);
+        }
+
+        .modal-content,
+        .confirm-content {
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .drawer {
+            width: min(620px, 92vw);
+        }
+
+        .drawer-header {
+            background: var(--sidebar-bg);
+        }
+
+        .visit-card {
+            background: #f8fafc;
+            border-right-color: var(--primary);
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-right: 220px;
+            }
+
+            .topbar,
+            .page-content {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            #appLayout.active {
+                display: block;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+                padding: 12px;
+            }
+
+            .sidebar-menu li {
+                flex: 0 0 auto;
+            }
+
+            .sidebar-footer {
+                display: none;
+            }
+
+            .main-content {
+                margin-right: 0;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                gap: 14px;
+                flex-direction: column;
+            }
+
+            .patients-toolbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .patients-search {
+                max-width: none;
+                min-width: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -175,10 +692,19 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h2>مجمع نبض الطبي</h2>
-                <p>نظام إدارة المجمع</p>
+                <span class="brand-icon" aria-hidden="true">🏥</span>
+                <div>
+                    <h2>مجمع نبض الطبي</h2>
+                    <p>نظام إدارة المجمع</p>
+                </div>
             </div>
             <ul class="sidebar-menu" id="sidebarMenu"></ul>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span aria-hidden="true">↩</span>
+                    <span>تسجيل الخروج</span>
+                </button>
+            </div>
         </div>
 
         <!-- Main Content -->
@@ -187,18 +713,26 @@
             <div class="topbar">
                 <h1 id="pageTitle">لوحة التحكم</h1>
                 <div class="user-info">
-                    <span id="userName">المستخدم</span>
-                    <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+                    <button class="navbar-icon" title="الإشعارات" aria-label="الإشعارات">🔔</button>
+                    <span class="user-avatar" id="userAvatar" aria-hidden="true">م</span>
+                    <span class="user-meta">
+                        <strong id="userName">المستخدم</strong>
+                        <small id="userRole">مستخدم النظام</small>
+                    </span>
                 </div>
             </div>
 
             <!-- Page Content -->
             <div class="page-content">
+                <div id="pageAlert"></div>
                 <!-- Dashboard Page -->
                 <div id="dashboardPage" class="page">
                     <div class="stats-grid" id="dashboardStats"></div>
                     <div class="card">
                         <h2>الزيارات خلال 6 أشهر</h2>
+                        <div class="chart-container">
+                            <canvas id="visitsChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -263,66 +797,74 @@
 
                 <!-- Patients Page -->
                 <div id="patientsPage" class="page">
-                    <div class="card">
-                        <h2>البحث والفلاتر</h2>
-                        <div class="filters">
-                            <div class="filter-group">
-                                <label>بحث</label>
-                                <input type="text" id="patientsSearch" placeholder="ابحث بالاسم أو رقم الملف أو الهاتف..." onkeyup="spa.debouncePatientsSearch()">
-                            </div>
-                            <div class="filter-group">
-                                <label>العيادة</label>
-                                <select id="patientsClinicFilter" onchange="spa.loadPatients()">
-                                    <option value="">جميع العيادات</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>الطبيب</label>
-                                <select id="patientsDoctorFilter" onchange="spa.loadPatients()">
-                                    <option value="">جميع الأطباء</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>الجنس</label>
-                                <select id="patientsGenderFilter" onchange="spa.loadPatients()">
-                                    <option value="">الكل</option>
-                                    <option value="male">ذكر</option>
-                                    <option value="female">أنثى</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>من تاريخ</label>
-                                <input type="date" id="patientsDateFrom" onchange="spa.loadPatients()">
-                            </div>
-                            <div class="filter-group">
-                                <label>إلى تاريخ</label>
-                                <input type="date" id="patientsDateTo" onchange="spa.loadPatients()">
-                            </div>
+                    <div class="patients-toolbar">
+                        <div class="patients-actions">
+                            <button class="btn btn-success" onclick="spa.openAddPatientModal()">
+                                <span aria-hidden="true">➕</span>
+                                <span>إضافة مريض جديد</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="spa.togglePatientsFilters()">
+                                <span aria-hidden="true">🔍</span>
+                                <span>تصفية</span>
+                            </button>
                         </div>
-                        <button class="btn btn-secondary" onclick="spa.resetPatientsFilters()">إعادة تعيين الفلاتر</button>
+                        <div class="patients-search">
+                            <input type="text" id="patientsSearch" placeholder="البحث برقم المريض..." onkeyup="spa.debouncePatientsSearch()">
+                        </div>
                     </div>
 
-                    <div class="card">
-                        <div class="btn-group">
-                            <button class="btn btn-success" onclick="spa.openAddPatientModal()">+ إضافة مريض جديد</button>
+                    <div class="filters compact-filters" id="patientsFiltersPanel">
+                        <div class="filter-group">
+                            <label>العيادة</label>
+                            <select id="patientsClinicFilter" onchange="spa.loadPatients()">
+                                <option value="">جميع العيادات</option>
+                            </select>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>رقم الملف</th>
-                                    <th>الاسم</th>
-                                    <th>العمر</th>
-                                    <th>الجنس</th>
-                                    <th>الهاتف</th>
-                                    <th>آخر زيارة</th>
-                                    <th>عدد الزيارات</th>
-                                    <th>إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="patientsTable">
-                                <tr><td colspan="8" class="loading">جاري التحميل...</td></tr>
-                            </tbody>
-                        </table>
+                        <div class="filter-group">
+                            <label>الطبيب</label>
+                            <select id="patientsDoctorFilter" onchange="spa.loadPatients()">
+                                <option value="">جميع الأطباء</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>الجنس</label>
+                            <select id="patientsGenderFilter" onchange="spa.loadPatients()">
+                                <option value="">الكل</option>
+                                <option value="male">ذكر</option>
+                                <option value="female">أنثى</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>من تاريخ</label>
+                            <input type="date" id="patientsDateFrom" onchange="spa.loadPatients()">
+                        </div>
+                        <div class="filter-group">
+                            <label>إلى تاريخ</label>
+                            <input type="date" id="patientsDateTo" onchange="spa.loadPatients()">
+                        </div>
+                        <button class="btn btn-secondary" onclick="spa.resetPatientsFilters()">إعادة تعيين</button>
+                    </div>
+
+                    <div class="card patients-table-card">
+                        <div class="patients-table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>رقم المريض</th>
+                                        <th>الجنس</th>
+                                        <th>العمر</th>
+                                        <th>رقم الهاتف</th>
+                                        <th>حالة المريض</th>
+                                        <th>تاريخ الإضافة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientsTable">
+                                    <tr><td colspan="8" class="loading">جاري التحميل...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <div class="pagination" id="patientsPagination"></div>
                     </div>
                 </div>

@@ -89,16 +89,14 @@ class NabdhSPA {
 
         const menuItems = {
             admin: [
-                { path: '/dashboard', icon: '📊', label: 'لوحة التحكم' },
-                { path: '/reception', icon: '🧾', label: 'الاستقبال' },
+                { path: '/dashboard', icon: '🏥', label: 'الرئيسية' },
                 { path: '/patients', icon: '👥', label: 'المرضى' },
-                { path: '/finance', icon: '💰', label: 'المالية' },
-                { path: '/reports', icon: '📑', label: 'التقارير' },
                 { path: '/appointments', icon: '📅', label: 'المواعيد' },
+                { path: '/finance', icon: '🧾', label: 'الفواتير' },
                 { path: '/settings', icon: '⚙️', label: 'الإعدادات' }
             ],
             reception: [
-                { path: '/reception', icon: '🧾', label: 'الاستقبال' },
+                { path: '/reception', icon: '🏥', label: 'الرئيسية' },
                 { path: '/patients', icon: '👥', label: 'المرضى' },
                 { path: '/appointments', icon: '📅', label: 'المواعيد' }
             ],
@@ -120,7 +118,24 @@ class NabdhSPA {
     }
 
     updateUserInfo() {
-        document.getElementById('userName').textContent = this.user.full_name || 'المستخدم';
+        const name = this.user.full_name || 'المستخدم';
+        const roleLabels = {
+            admin: 'مدير النظام',
+            reception: 'الاستقبال',
+            doctor: 'طبيب'
+        };
+
+        document.getElementById('userName').textContent = name;
+
+        const roleEl = document.getElementById('userRole');
+        if (roleEl) {
+            roleEl.textContent = roleLabels[this.user.role] || 'مستخدم النظام';
+        }
+
+        const avatar = document.getElementById('userAvatar');
+        if (avatar) {
+            avatar.textContent = name.trim().charAt(0) || 'م';
+        }
     }
 
     // Router
@@ -173,10 +188,10 @@ class NabdhSPA {
 
     getRoute(path) {
         const routes = {
-            '/dashboard': { page: 'dashboard', title: 'لوحة التحكم', roles: ['admin'] },
-            '/reception': { page: 'reception', title: 'الاستقبال', roles: ['admin', 'reception'] },
-            '/patients': { page: 'patients', title: 'المرضى', roles: ['admin', 'reception', 'doctor'] },
-            '/finance': { page: 'finance', title: 'المالية', roles: ['admin'] },
+            '/dashboard': { page: 'dashboard', title: 'الرئيسية', roles: ['admin'] },
+            '/reception': { page: 'reception', title: 'الرئيسية', roles: ['admin', 'reception'] },
+            '/patients': { page: 'patients', title: 'إدارة المرضى', roles: ['admin', 'reception', 'doctor'] },
+            '/finance': { page: 'finance', title: 'الفواتير', roles: ['admin'] },
             '/reports': { page: 'reports', title: 'التقارير', roles: ['admin'] },
             '/appointments': { page: 'appointments', title: 'المواعيد', roles: ['admin', 'reception', 'doctor'] },
             '/settings': { page: 'settings', title: 'الإعدادات', roles: ['admin'] },
@@ -371,23 +386,31 @@ class NabdhSPA {
             return;
         }
 
-        tbody.innerHTML = patients.map(p => {
-            const lastVisit = p.visits && p.visits.length > 0 ? p.visits[0] : null;
-            const lastVisitDate = lastVisit ? new Date(lastVisit.visit_date).toLocaleDateString('ar-SA') : '-';
+        tbody.innerHTML = patients.map((p, index) => {
+            const serial = ((data.current_page || 1) - 1) * (data.per_page || patients.length) + index + 1;
+            const createdDate = p.created_at ? new Date(p.created_at).toLocaleDateString('ar-SA') : '-';
+            const isActive = (p.visits_count || 0) > 0;
+            const statusLabel = isActive ? 'نشط' : 'جديد';
+            const statusClass = isActive ? 'status-active' : 'status-new';
+            const genderClass = p.gender === 'male' ? 'gender-male' : 'gender-female';
+            const genderLabel = p.gender === 'male' ? 'ذكر' : 'أنثى';
+            const encodedName = encodeURIComponent(p.full_name || '').replace(/'/g, '%27');
 
             return `
-                <tr data-patient-id="${p.id}" onclick="spa.openPatientDrawer(${p.id})">
-                    <td><span class="badge badge-info">${p.file_number}</span></td>
-                    <td>${p.full_name}</td>
-                    <td>${p.age}</td>
-                    <td>${p.gender === 'male' ? 'ذكر' : 'أنثى'}</td>
-                    <td>${p.phone}</td>
-                    <td>${lastVisitDate}</td>
-                    <td><span class="badge badge-success">${p.visits_count || 0}</span></td>
+                <tr data-patient-id="${p.id}">
+                    <td class="serial-cell">${serial}</td>
+                    <td><span class="patient-number">${p.file_number}</span></td>
+                    <td><span class="gender-badge ${genderClass}">${genderLabel}</span></td>
+                    <td>${p.age} سنة</td>
+                    <td>${p.phone || '-'}</td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                    <td>${createdDate}</td>
                     <td>
-                        <button class="btn btn-sm" style="background: #17a2b8; padding: 8px 12px; min-width: 45px;" title="عرض التفاصيل" onclick="event.stopPropagation(); spa.openViewModal(${p.id})">👁️</button>
-                        <button class="btn btn-sm" onclick="event.stopPropagation(); spa.openEditPatientModal(${p.id})">تعديل</button>
-                        ${p.visits_count === 0 ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); spa.deletePatient(${p.id}, '${p.full_name}')">حذف</button>` : ''}
+                        <div class="row-actions">
+                            <button class="icon-btn" title="عرض التفاصيل" aria-label="عرض التفاصيل" onclick="event.stopPropagation(); spa.openViewModal(${p.id})">👁</button>
+                            <button class="icon-btn" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation(); spa.openEditPatientModal(${p.id})">✎</button>
+                            <button class="icon-btn danger" title="${isActive ? 'لا يمكن حذف مريض لديه زيارات' : 'حذف'}" aria-label="حذف" ${isActive ? 'disabled' : ''} onclick="event.stopPropagation(); spa.deletePatient(${p.id}, decodeURIComponent('${encodedName}'))">🗑</button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -415,6 +438,13 @@ class NabdhSPA {
         html += `<button ${current_page === last_page ? 'disabled' : ''} onclick="spa.loadPatients(${current_page + 1})">التالي</button>`;
         
         pagination.innerHTML = html;
+    }
+
+    togglePatientsFilters() {
+        const panel = document.getElementById('patientsFiltersPanel');
+        if (panel) {
+            panel.classList.toggle('open');
+        }
     }
 
     debouncePatientsSearch() {
